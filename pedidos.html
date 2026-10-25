@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Lúmina: joyería personalizada mediante grabado láser.">
+  <title>Pedidos y ayuda | Lúmina Joyería</title>
+  <link rel="stylesheet" href="css/estilos.css">
+  <script src="js/tienda.js" defer></script>
+</head>
+<body>
+  <div class="announcement">✳ Diseñado para contar tu historia · Proyecto académico de demostración</div>
+  <header class="site-header">
+    <a class="logo" href="index.html" aria-label="Lúmina, ir al inicio">LÚMINA<span>✳</span><small>JOYERÍA LÁSER</small></a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Mostrar navegación" aria-expanded="false">☰ Menú</button>
+    <nav class="nav" id="mainNav" aria-label="Menú principal"><a href="index.html">Inicio</a><a href="catalogo.html">Catálogo</a><a href="personalizar.html">Personalizar</a><a href="comunidad.html">Comunidad</a><a href="pedidos.html" class="active" aria-current="page">Pedidos y ayuda</a></nav>
+    <a class="cart-link" href="pedidos.html">Bolsa <span id="cartCount">0</span></a>
+  </header>
+  <main><section class="page-intro orders-intro"><span class="overline">TU BOLSA / AYUDA</span><h1>Todo listo para<br><i>seguir creando.</i></h1><p>Revisa las piezas que elegiste, tus diseños guardados y consulta cómo continuar.</p></section><section class="section order-layout"><div class="order-list"><div class="section-head compact"><div><span class="overline">TU SELECCIÓN</span><h2>Mi <i>bolsa.</i></h2></div><button class="text-button" id="clearCart">Vaciar bolsa</button></div><div id="cartItems"></div><div class="cart-totals"><span>Total referencial</span><strong id="cartTotal">S/ 0.00</strong></div><p class="fineprint">No se procesan pagos ni pedidos reales desde esta página.</p><button class="button dark full" id="copyOrder">Copiar resumen para consulta ↗</button><div id="orderFeedback" class="form-message" role="status"></div></div><aside class="help-panel" id="pedido-whatsapp"><span class="overline">ESTAMOS PARA AYUDARTE</span><h2>¿Tienes <i>dudas?</i></h2><p>Cuando el negocio cuente con atención real, aquí se puede habilitar un número de WhatsApp para cotizaciones y seguimiento.</p><button type="button" class="button dark full" id="whatsappOrder">Consultar pedido por WhatsApp ↗</button><div class="faq"><details><summary>¿Cómo personalizo una joya?</summary><p>Elige el modelo, ingresa el texto o una idea y guarda la propuesta. El diseño final debe revisarse antes de grabar.</p></details><details><summary>¿Puedo añadir una fotografía?</summary><p>Sí, puede solicitarse una evaluación del grabado fotográfico. Depende de la superficie y material elegidos.</p></details><details id="pagos"><summary>¿Qué métodos de pago ofrecen?</summary><p>Este prototipo no acepta pagos. Los medios autorizados deberán publicarse cuando la tienda opere realmente.</p></details><details id="consulta"><summary>¿Cómo consulto mi pedido?</summary><p>El seguimiento requiere una base de datos y un servicio real, todavía no implementados en esta demostración.</p></details></div><a href="personalizar.html" class="round-link">VOLVER A PERSONALIZAR <span>↗</span></a></aside></section><section class="section about-block" id="nosotros"><span class="overline">SOBRE LA JOYERÍA</span><h2>Joyas con <i>significado.</i></h2><p>Lúmina es la identidad propuesta para este proyecto académico de joyería personalizada láser. La idea consiste en transformar nombres, fechas y recuerdos en piezas únicas; primero se prepara una vista previa, después el cliente aprueba y finalmente se coordina el grabado y entrega.</p></section></main>
+  <footer class="footer"><div><a class="footer-brand" href="index.html">LÚMINA ✳</a><p>Una joya, una historia que permanece.</p></div><div><b>EXPLORA</b><a href="catalogo.html">Colección</a><a href="personalizar.html">Diseña tu joya</a><a href="pedidos.html">Ayuda y pedidos</a></div><div><b>INFORMACIÓN</b><p>Proyecto académico 2026 · Perú</p><p>Precios y testimonios demostrativos.</p></div><div class="footer-bottom">© 2026 Lúmina · Sitio de demostración, sin pagos ni envíos reales.</div></footer>
+
+  <!-- Botón flotante de WhatsApp: cambia el teléfono en js/whatsapp.js -->
+  <button class="whatsapp-float" id="whatsappFloat" type="button" aria-label="Consultar por WhatsApp" title="Consultar por WhatsApp">
+    <svg viewBox="0 0 32 32" width="27" height="27" aria-hidden="true" fill="currentColor"><path d="M16.01 3C8.84 3 3 8.84 3 16c0 2.3.61 4.54 1.76 6.52L3 29l6.65-1.74A12.92 12.92 0 0 0 16.01 29C23.17 29 29 23.16 29 16S23.17 3 16.01 3Zm0 23.61c-2.01 0-3.98-.54-5.71-1.56l-.41-.24-3.95 1.04L7 22.01l-.27-.43A10.53 10.53 0 0 1 5.4 16c0-5.85 4.76-10.61 10.61-10.61S26.62 10.15 26.62 16s-4.76 10.61-10.61 10.61Zm5.82-7.93c-.32-.16-1.89-.93-2.18-1.04-.29-.1-.5-.16-.71.16-.21.31-.82 1.04-1 1.25-.18.21-.37.23-.69.08a8.7 8.7 0 0 1-2.57-1.58 9.63 9.63 0 0 1-1.78-2.21c-.19-.32-.02-.49.14-.65.14-.14.32-.37.48-.56.16-.18.21-.32.32-.53.11-.21.05-.4-.03-.56-.08-.16-.71-1.72-.98-2.35-.25-.61-.51-.53-.71-.54h-.61c-.21 0-.56.08-.85.4s-1.11 1.09-1.11 2.66 1.14 3.09 1.3 3.3c.16.21 2.24 3.42 5.42 4.79.76.33 1.36.53 1.82.68.77.25 1.48.21 2.04.13.62-.09 1.89-.77 2.16-1.51.27-.74.27-1.38.19-1.51-.08-.13-.29-.21-.61-.37Z"/></svg>
+    <span>WhatsApp</span>
+  </button>
+  <div class="whatsapp-notice" id="whatsappNotice" role="status" hidden></div>
+  <script src="js/whatsapp.js" defer></script>
+</body>
+</html>
