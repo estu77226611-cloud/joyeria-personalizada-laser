@@ -49,3 +49,12 @@ Desde la carpeta del proyecto con Git configurado:
 
 ## Corrección de fotografías
 Se eliminó una captura de pantalla que por error había sido incluida como `joya-01.jpg`. Las fotografías están ahora asociadas a los productos correspondientes. Para actualizar GitHub, copia esta carpeta sobre tu repositorio local y usa `git add .`, `git commit -m "Corregir fotografías del catálogo"`, `git push origin main`.
+
+## Navegación de comentarios
+En `comunidad.html` se incluye un carrusel horizontal con flechas, desplazamiento táctil y contador. Archivo: `js/carrusel-comentarios.js`. Los comentarios existentes se conservan.
+
+
+## Eliminar comentarios de prueba en el carrusel
+En **Comunidad**, pulsa **Gestionar comentarios de este navegador** y después **Eliminar comentario** en la tarjeta que quieras borrar. Confirma la eliminación. Este cambio persiste tras refrescar la página, pero afecta **solo al almacenamiento local del navegador actual**. El botón no equivale a un inicio de sesión de administrador.
+
+Si activas Firebase, el control de borrado local se oculta porque no serviría para eliminar comentarios públicos. Para moderar comentarios de Firestore desde distintos dispositivos necesitas **Firebase Authentication**, una cuenta administradora verificada y **reglas de seguridad de Firestore** que permitan eliminar exclusivamente a esa cuenta. No se debe poner una contraseña de administrador en JavaScript público ni permitir `delete` a todos los usuarios.

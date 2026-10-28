@@ -9,6 +9,12 @@ if (firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId) {
   const list = document.querySelector('#commentsList');
   const feedback = document.querySelector('#commentFeedback');
   const entries = collection(db, 'comentarios');
+  const manage = document.querySelector('#toggleCommentManager');
+  const manageNote = document.querySelector('#commentManagerNote');
+  if (manage) { manage.hidden = true; }
+  if (manageNote) manageNote.hidden = true;
+  // La eliminación de comentarios públicos requiere autenticación y reglas de Firestore.
+  // Nunca permitir borrado global mediante un botón público sin autorización.
   // Sustituimos el formulario local por el formulario público: evita doble envío.
   const newForm = form.cloneNode(true);
   form.replaceWith(newForm);

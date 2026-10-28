@@ -235,11 +235,21 @@ function iniciarComunidad() {
     try { return JSON.parse(localStorage.getItem('lumina_comentarios_v2')) || []; }
     catch { return []; }
   }
+  const gestion = seleccionar('#toggleCommentManager');
+  const avisoGestion = seleccionar('#commentManagerNote');
+  let modoGestion = false;
+  if (gestion) gestion.addEventListener('click', () => {
+    modoGestion = !modoGestion;
+    gestion.setAttribute('aria-pressed', String(modoGestion));
+    gestion.textContent = modoGestion ? 'Terminar gestión de comentarios' : 'Gestionar comentarios de este navegador';
+    if (avisoGestion) avisoGestion.hidden = !modoGestion;
+    pintarComentarios();
+  });
   function pintarComentarios() {
-    lista.replaceChildren(); // textContent evita insertar HTML escrito por visitantes.
+    lista.replaceChildren();
     const comentarios = leerComentarios();
     if (!comentarios.length) { lista.textContent = 'Aún no hay comentarios. Escribe el primero.'; return; }
-    comentarios.forEach(item => {
+    comentarios.forEach((item, indice) => {
       const contenedor = document.createElement('article');
       contenedor.className = 'comment';
       const nombre = document.createElement('b');
@@ -247,6 +257,22 @@ function iniciarComunidad() {
       const texto = document.createElement('p');
       texto.textContent = item.texto;
       contenedor.append(nombre, texto);
+      if (modoGestion) {
+        const borrar = document.createElement('button');
+        borrar.type = 'button';
+        borrar.className = 'comment-delete';
+        borrar.textContent = 'Eliminar comentario';
+        borrar.setAttribute('aria-label', 'Eliminar comentario de ' + String(item.nombre || 'visitante'));
+        borrar.addEventListener('click', () => {
+          if (!window.confirm('¿Eliminar este comentario de este navegador?')) return;
+          const actuales = leerComentarios();
+          actuales.splice(indice, 1);
+          localStorage.setItem('lumina_comentarios_v2', JSON.stringify(actuales));
+          seleccionar('#commentFeedback').textContent = 'Comentario eliminado de este navegador.';
+          pintarComentarios();
+        });
+        contenedor.append(borrar);
+      }
       lista.append(contenedor);
     });
   }
