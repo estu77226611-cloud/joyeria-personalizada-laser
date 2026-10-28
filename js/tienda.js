@@ -1,12 +1,160 @@
-/* LÚMINA — Funcionalidad de demostración. No utiliza servidor ni procesa pagos. */
+/* LÚMINA — Catálogo, personalización, carrito y comunidad. */
 'use strict';
 
 // 1. Productos y precios de ejemplo. Cambia estos datos para editar el catálogo.
 const productos = [
-  { id: 1, tipo: 'collar', nombre: 'Collar con nombre', precio: 79, imagen: 'assets/collar.svg', etiqueta: 'MÁS ELEGIDO' },
-  { id: 2, tipo: 'pulsera', nombre: 'Pulsera con dijes', precio: 65, imagen: 'assets/pulsera.svg', etiqueta: 'PARA REGALAR' },
-  { id: 3, tipo: 'anillo', nombre: 'Anillo grabado', precio: 59, imagen: 'assets/anillo.svg', etiqueta: 'PERSONALÍZALO' },
-  { id: 4, tipo: 'dije', nombre: 'Dije redondo', precio: 39, imagen: 'assets/dije.svg', etiqueta: 'UN RECUERDO' }
+  {
+    "id": 1,
+    "tipo": "collar",
+    "nombre": "Collares dorados con dijes",
+    "precio": 89,
+    "imagen": "assets/productos/joya-01.jpg",
+    "etiqueta": "COLECCIÓN"
+  },
+  {
+    "id": 2,
+    "tipo": "anillo",
+    "nombre": "Anillo brillante plata",
+    "precio": 99,
+    "imagen": "assets/productos/joya-02.jpg",
+    "etiqueta": "COLECCIÓN"
+  },
+  {
+    "id": 3,
+    "tipo": "pulsera",
+    "nombre": "Pulsera corazón personalizada",
+    "precio": 69,
+    "imagen": "assets/productos/joya-03.jpg",
+    "etiqueta": "COLECCIÓN"
+  },
+  {
+    "id": 4,
+    "tipo": "pulsera",
+    "nombre": "Pulsera con dijes y nombre",
+    "precio": 69,
+    "imagen": "assets/productos/joya-04.jpg",
+    "etiqueta": "COLECCIÓN"
+  },
+  {
+    "id": 5,
+    "tipo": "pulsera",
+    "nombre": "Pulsera de corazones",
+    "precio": 69,
+    "imagen": "assets/productos/joya-05.jpg",
+    "etiqueta": "COLECCIÓN"
+  },
+  {
+    "id": 6,
+    "tipo": "pulsera",
+    "nombre": "Pulsera Amor Fe Paz",
+    "precio": 69,
+    "imagen": "assets/productos/joya-06.jpg",
+    "etiqueta": "COLECCIÓN"
+  },
+  {
+    "id": 7,
+    "tipo": "anillo",
+    "nombre": "Anillo solitario dorado",
+    "precio": 99,
+    "imagen": "assets/productos/joya-07.jpg",
+    "etiqueta": "COLECCIÓN"
+  },
+  {
+    "id": 8,
+    "tipo": "collar",
+    "nombre": "Conjunto mariposa en plata",
+    "precio": 89,
+    "imagen": "assets/productos/joya-08.jpg",
+    "etiqueta": "COLECCIÓN"
+  },
+  {
+    "id": 9,
+    "tipo": "collar",
+    "nombre": "Conjunto turquesa",
+    "precio": 89,
+    "imagen": "assets/productos/joya-09.jpg",
+    "etiqueta": "COLECCIÓN"
+  },
+  {
+    "id": 10,
+    "tipo": "collar",
+    "nombre": "Collar nombre personalizado",
+    "precio": 89,
+    "imagen": "assets/productos/joya-10.jpg",
+    "etiqueta": "COLECCIÓN"
+  },
+  {
+    "id": 11,
+    "tipo": "anillo",
+    "nombre": "Anillo piedra rosa",
+    "precio": 99,
+    "imagen": "assets/productos/joya-11.jpg",
+    "etiqueta": "COLECCIÓN"
+  },
+  {
+    "id": 12,
+    "tipo": "anillo",
+    "nombre": "Argollas para pareja",
+    "precio": 99,
+    "imagen": "assets/productos/joya-12.jpg",
+    "etiqueta": "COLECCIÓN"
+  },
+  {
+    "id": 13,
+    "tipo": "pulsera",
+    "nombre": "Pulsera luna plata",
+    "precio": 69,
+    "imagen": "assets/productos/joya-13.jpg",
+    "etiqueta": "COLECCIÓN"
+  },
+  {
+    "id": 14,
+    "tipo": "collar",
+    "nombre": "Cadena y pulsera plata",
+    "precio": 89,
+    "imagen": "assets/productos/joya-14.jpg",
+    "etiqueta": "COLECCIÓN"
+  },
+  {
+    "id": 15,
+    "tipo": "pulsera",
+    "nombre": "Pulseras estilo delicado",
+    "precio": 69,
+    "imagen": "assets/productos/joya-15.jpg",
+    "etiqueta": "COLECCIÓN"
+  },
+  {
+    "id": 16,
+    "tipo": "pulsera",
+    "nombre": "Pulsera piedra verde",
+    "precio": 69,
+    "imagen": "assets/productos/joya-16.jpg",
+    "etiqueta": "COLECCIÓN"
+  },
+  {
+    "id": 17,
+    "tipo": "anillo",
+    "nombre": "Argollas de pareja",
+    "precio": 99,
+    "imagen": "assets/productos/joya-17.jpg",
+    "etiqueta": "COLECCIÓN"
+  },
+  {
+    "id": 18,
+    "tipo": "dije",
+    "nombre": "Aretes corazón",
+    "precio": 59,
+    "imagen": "assets/productos/joya-18.jpg",
+    "etiqueta": "COLECCIÓN"
+  },
+  {
+    "id": 19,
+    "tipo": "anillo",
+    "nombre": "Anillo de compromiso dorado",
+    "precio": 99,
+    "imagen": "assets/productos/joya-19.jpg",
+    "etiqueta": "COLECCIÓN"
+  }
 ];
 const dinero = monto => `S/ ${monto.toFixed(2)}`;
 const seleccionar = selector => document.querySelector(selector);
@@ -30,7 +178,7 @@ function agregarProducto(id, grabado = '', acabado = 'dorado', nota = '') {
   const bolsa = leerBolsa();
   bolsa.push({ uid: Date.now() + Math.random(), id, grabado, acabado, nota });
   guardarBolsa(bolsa);
-  alert(`${producto.nombre} agregado a tu bolsa de demostración.`);
+  alert(`${producto.nombre} agregado a tu bolsa.`);
 }
 
 // 3. Catálogo: botones funcionales y filtros por categoría.
@@ -82,6 +230,7 @@ function iniciarComunidad() {
   const formulario = seleccionar('#commentForm');
   if (!formulario) return;
   const lista = seleccionar('#commentsList');
+  if (!lista) return;
   function leerComentarios() {
     try { return JSON.parse(localStorage.getItem('lumina_comentarios_v2')) || []; }
     catch { return []; }
@@ -110,7 +259,7 @@ function iniciarComunidad() {
     comentarios.unshift({ nombre, texto });
     localStorage.setItem('lumina_comentarios_v2', JSON.stringify(comentarios.slice(0, 30)));
     formulario.reset();
-    seleccionar('#commentFeedback').textContent = 'Tu comentario se guardó en este navegador.';
+    seleccionar('#commentFeedback').textContent = 'Comentario publicado en este navegador. Para que lo vean todos, configura Firebase siguiendo el README.';
     pintarComentarios();
   });
   const compartir = seleccionar('#shareButton');
@@ -162,18 +311,17 @@ function iniciarPedidos() {
     seleccionar('#cartTotal').textContent = dinero(total);
   }
   seleccionar('#clearCart').addEventListener('click', () => { guardarBolsa([]); pintarBolsa(); });
-  seleccionar('#copyOrder').addEventListener('click', async () => {
+  seleccionar('#copyOrder').addEventListener('click', () => {
     const bolsa = leerBolsa();
     if (!bolsa.length) { seleccionar('#orderFeedback').textContent = 'Primero agrega una joya a tu bolsa.'; return; }
     const resumen = bolsa.map((item, indice) => {
       const producto = productos.find(p => p.id === item.id);
-      return `${indice + 1}. ${producto.nombre} — ${dinero(producto.precio)}${item.grabado ? ` | Grabado: ${item.grabado}` : ''} | Acabado: ${item.acabado}${item.nota ? ` | Nota: ${item.nota}` : ''}`;
+      return `${indice + 1}. ${producto.nombre} - ${dinero(producto.precio)}${item.grabado ? ` | Grabado: ${item.grabado}` : ''} | Acabado: ${item.acabado}${item.nota ? ` | Nota: ${item.nota}` : ''}`;
     }).join('\n');
     const total = bolsa.reduce((suma, item) => suma + (productos.find(p => p.id === item.id)?.precio || 0), 0);
-    try {
-      await navigator.clipboard.writeText(`Consulta de joyería Lúmina (demo)\n${resumen}\nTotal referencial: ${dinero(total)}\nPendiente de cotización y aprobación.`);
-      seleccionar('#orderFeedback').textContent = 'Resumen copiado. Puedes pegarlo en un mensaje de consulta.';
-    } catch { seleccionar('#orderFeedback').textContent = 'Para copiar el resumen, abre esta página mediante Live Server (localhost).'; }
+    const mensaje = `Hola, quisiera consultar por estas joyas de Lúmina:\n${resumen}\nTotal referencial: ${dinero(total)}\n¿Podrían confirmarme disponibilidad, el pago y la entrega?`;
+    window.open('https://wa.me/51936099354?text=' + encodeURIComponent(mensaje), '_blank', 'noopener,noreferrer');
+    seleccionar('#orderFeedback').textContent = 'Se abrió WhatsApp con el resumen. El pedido se confirma al conversar con atención.';
   });
   pintarBolsa();
 }
@@ -194,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
   const botonMenu = seleccionar('#menuToggle');
-  botonMenu.addEventListener('click', () => {
+  botonMenu?.addEventListener('click', () => {
     const abierto = seleccionar('#mainNav').classList.toggle('open');
     botonMenu.setAttribute('aria-expanded', String(abierto));
   });

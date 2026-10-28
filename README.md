@@ -1,31 +1,51 @@
-# LÚMINA — Joyería Personalizada Láser
+# LÚMINA – Joyería personalizada · versión Web 2.0
 
-## Abrir el proyecto
-1. Descomprime el ZIP.
-2. Abre la carpeta `Joyeria_Laser_Rediseno` en Visual Studio Code.
-3. Abre `index.html` en un navegador, o usa la extensión **Live Server** (recomendada).
+## Abrir
+Abre la carpeta con Visual Studio Code y utiliza Live Server en `index.html`. Se puede desplegar sin compilación en GitHub Pages.
 
-## Organización para estudiar HTML5
-- `index.html`: página de bienvenida.
-- `catalogo.html`: catálogo y categorías.
-- `personalizar.html`: formulario de diseño y vista previa.
-- `comunidad.html`: espacio para comentarios e inspiración.
-- `pedidos.html`: bolsa y preguntas frecuentes.
-- `css/estilos.css`: todos los estilos visuales y diseño adaptable.
-- `js/tienda.js`: productos, filtros, bolsa, formularios y comentarios.
-- `assets/`: ilustraciones SVG locales de las joyas.
+## Cambios
+- 19 fotografías proporcionadas por el propietario del proyecto, optimizadas para la web, en `assets/productos/`. Confirma que tienes permiso de uso/publicación de todas ellas.
+- Catálogo con fotografías, filtros, personalizador, carrito, galería y botón WhatsApp.
+- WhatsApp mantenido sin modificaciones: `js/whatsapp.js` (51936099354).
+- Corregido el error de `comunidad.html`: antes había dos atributos `id` en el mismo elemento; JavaScript no encontraba `commentsList`. Ahora comentarios locales aparecen y persisten tras F5 en el mismo navegador.
+- Comentarios públicos Web 2.0 preparados para Firebase Firestore.
 
-## Qué puedes modificar
-- Productos y precios: arreglo `productos` al inicio de `js/tienda.js`.
-- Textos, encabezados y secciones: el archivo HTML de cada página.
-- Colores y tipografías: variables `:root` en `css/estilos.css`.
-- Ilustraciones: carpeta `assets/`.
+## Activar comentarios públicos para todos los usuarios
+1. En https://console.firebase.google.com/ crea un proyecto.
+2. Agrega una aplicación web y copia la configuración en `js/firebase-config.js` (apiKey, authDomain, projectId, appId).
+3. Ve a Firestore Database y crea una base de datos.
+4. Publica reglas de Firestore para colección `comentarios` (abajo). Es recomendable configurar también App Check, autenticación, moderación, límites por usuario y supervisión de costos antes de habilitar publicación abierta.
+5. Sube estos cambios a GitHub y prueba desde dos navegadores.
 
-## Alcance académico
-La vista previa es ilustrativa; el texto del grabado no se integra físicamente sobre la imagen de la pieza. La bolsa y los comentarios se guardan **solo en el navegador** mediante `localStorage`. El catálogo usa precios de referencia. No hay pagos, pedidos reales, envío de WhatsApp, subida de fotos, cuentas ni seguimiento mediante servidor. Para poner la tienda en producción se necesita backend, seguridad, pasarela de pago, contacto real y políticas comerciales.
+Ejemplo de reglas **para pruebas controladas** (NO son protección anti-spam; evita dejarlas abiertas en un sitio público sin medidas adicionales):
 
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /comentarios/{comentarioId} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['nombre','texto','creado'])
+        && request.resource.data.nombre is string
+        && request.resource.data.nombre.size() >= 1
+        && request.resource.data.nombre.size() <= 40
+        && request.resource.data.texto is string
+        && request.resource.data.texto.size() >= 1
+        && request.resource.data.texto.size() <= 280
+        && request.resource.data.creado == request.time;
+      allow update, delete: if false;
+    }
+  }
+}
+```
 
-## Mapa del sitio y botón WhatsApp (actualización)
-La página de inicio contiene un directorio con las cuatro categorías del mapa: Catálogo, Personaliza tu joya, Comunidad y Pedidos y ayuda, cada una con sus subopciones.
-Botón flotante WhatsApp en TODAS las páginas: abre `js/whatsapp.js` y reemplaza la cadena vacía de `NUMERO_WHATSAPP` por el teléfono real del negocio, con código de país y sin `+`. Ejemplo de FORMATO peruano: `51` + los 9 dígitos del número real. No inventes un teléfono. Hasta configurarlo, el botón muestra un aviso.
-La imagen de referencia es solo una vista previa local; no se sube ni se guarda. Pagos, envíos y seguimiento requieren un sistema real.
+**Nota:** En modo sin Firebase, cada visitante ve solo sus propios comentarios locales. La web puede captar consultas de WhatsApp, pero no procesa pagos ni acredita entregas por sí sola; confirma los pedidos con el cliente. No se recomienda anunciar pagos/envíos como disponibles hasta contar con los mecanismos operativos. Precios del catálogo son referenciales y editables en `js/tienda.js`.
+
+## Actualizar en GitHub
+Desde la carpeta del proyecto con Git configurado:
+`git add .`
+`git commit -m "Actualización diseño y comunidad"`
+`git push origin main`
+
+## Corrección de fotografías
+Se eliminó una captura de pantalla que por error había sido incluida como `joya-01.jpg`. Las fotografías están ahora asociadas a los productos correspondientes. Para actualizar GitHub, copia esta carpeta sobre tu repositorio local y usa `git add .`, `git commit -m "Corregir fotografías del catálogo"`, `git push origin main`.
