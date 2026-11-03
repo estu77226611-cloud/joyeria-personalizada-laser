@@ -1,0 +1,6 @@
+# Lúmina Joyería — rastreo para buscadores
+User-agent: *
+Allow: /
+Disallow: /admin.html
+
+Sitemap: https://estu77226611-cloud.github.io/joyeria-personalizada-laser/sitemap.xml

@@ -1,0 +1,14 @@
+{
+  "name": "lumina-joyeria",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Sitio de joyería personalizada con pedidos, seguimiento por código y panel de administración.",
+  "scripts": {
+    "start": "npx --yes serve . -l 5173",
+    "format": "prettier --write \"**/*.{js,html,md,json}\"",
+    "format:check": "prettier --check \"**/*.{js,html,md,json}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2"
+  }
+}

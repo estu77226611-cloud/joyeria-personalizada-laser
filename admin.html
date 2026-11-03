@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#a7734c" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta
+      name="description"
+      content="Panel interno de Lúmina para gestionar pedidos y estados de producción."
+    />
+    <title>Panel de administración | Lúmina Joyería</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="assets/favicon-180.png" />
+    <link rel="stylesheet" href="css/estilos.css?v=20261103b" />
+    <script type="module" src="js/main.js"></script>
+    <script type="module" src="js/admin.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+    <div class="announcement" role="region" aria-label="Aviso del panel interno">
+      ✧ PANEL INTERNO · GESTIÓN DE PEDIDOS · USO EXCLUSIVO DEL TALLER
+    </div>
+    <header class="site-header">
+      <a class="logo" href="index.html" aria-label="LÚMINA ✳ JOYERÍA LÁSER — ir al inicio"
+        >LÚMINA<span aria-hidden="true">✳</span><small>JOYERÍA LÁSER</small></a
+      >
+      <button
+        class="menu-toggle"
+        id="menuToggle"
+        type="button"
+        aria-label="Mostrar navegación"
+        aria-expanded="false"
+        aria-controls="mainNav"
+      >
+        ☰ Menú
+      </button>
+      <nav class="nav" id="mainNav" aria-label="Menú principal">
+        <a href="index.html">Inicio</a>
+        <a href="catalogo.html">Catálogo</a>
+        <a href="personalizar.html">Personalizar</a>
+        <a href="comunidad.html">Comunidad</a>
+        <a href="seguimiento.html">Seguimiento</a>
+        <a href="pedidos.html">Pedidos y ayuda</a>
+      </nav>
+      <a class="cart-link" href="pedidos.html">Bolsa <span id="cartCount">0</span></a>
+    </header>
+
+    <main id="contenido">
+      <section class="page-intro admin-intro">
+        <span class="overline">PANEL INTERNO / TALLER</span>
+        <h1>Pedidos en<br /><i>producción.</i></h1>
+        <p>
+          Revisa los pedidos recibidos, actualiza el estado, registra la guía de Shalom y deja notas
+          para el historial del cliente.
+        </p>
+      </section>
+
+      <section class="section admin-shell">
+        <form id="adminLogin" class="admin-login" novalidate>
+          <span class="overline">ACCESO RESTRINGIDO</span>
+          <h2>Entrar al <i>panel.</i></h2>
+          <p class="fineprint">
+            Solo el administrador del taller puede consultar todos los pedidos. Los clientes
+            consultan el suyo con el código de seguimiento.
+          </p>
+
+          <label class="field" for="adminEmail">
+            <span>Correo del administrador</span>
+            <input
+              id="adminEmail"
+              name="adminEmail"
+              type="email"
+              autocomplete="username"
+              required
+              placeholder="admin@lumina.pe"
+            />
+          </label>
+          <label class="field" for="adminPassword">
+            <span>Contraseña</span>
+            <input
+              id="adminPassword"
+              name="adminPassword"
+              type="password"
+              autocomplete="current-password"
+              required
+              placeholder="Tu contraseña"
+            />
+          </label>
+
+          <button class="button dark full" id="adminSubmit" type="submit">
+            Entrar al panel ↗
+          </button>
+          <div id="loginFeedback" class="form-message" role="status"></div>
+          <p class="notice" id="demoCredentials" hidden></p>
+          <p class="fineprint">
+            La configuración de Firebase, el alta del administrador y las reglas de seguridad se
+            explican en <a class="under-link" href="FIREBASE_SETUP.md">FIREBASE_SETUP.md</a>.
+          </p>
+        </form>
+
+        <div id="adminPanel" class="admin-panel" hidden>
+          <div class="admin-topbar">
+            <div>
+              <span class="overline">SESIÓN ACTIVA</span>
+              <h2>Hola, <i id="adminUser">Administrador</i></h2>
+            </div>
+            <button class="button button--outline" id="logoutAdmin" type="button">
+              Cerrar sesión
+            </button>
+          </div>
+
+          <p class="notice notice--soft" id="adminBanner" hidden>
+            Modo demostración: los pedidos se guardan solo en este navegador. Al configurar
+            Firebase, el panel trabajará con datos reales y Firebase Authentication.
+          </p>
+
+          <div class="admin-stats" aria-label="Resumen de pedidos">
+            <div class="admin-stat">
+              <span>Total de pedidos</span><strong id="statTotal">0</strong>
+            </div>
+            <div class="admin-stat">
+              <span>En preparación</span><strong id="statPreparando">0</strong>
+            </div>
+            <div class="admin-stat">
+              <span>Entregados</span><strong id="statEntregados">0</strong>
+            </div>
+          </div>
+
+          <div class="admin-controls">
+            <label class="field" for="adminSearch">
+              <span>Buscar</span>
+              <input
+                id="adminSearch"
+                type="search"
+                placeholder="Código, nombre o teléfono"
+                autocomplete="off"
+              />
+            </label>
+            <label class="field" for="adminFilter">
+              <span>Filtrar por estado</span>
+              <select id="adminFilter">
+                <option value="todos">Todos los estados</option>
+              </select>
+            </label>
+            <button class="button button--outline" id="demoSeed" type="button" hidden>
+              Crear pedido de ejemplo
+            </button>
+          </div>
+
+          <div class="admin-list-head">
+            <h3>Pedidos</h3>
+            <p id="ordersCount" aria-live="polite">0 pedidos</p>
+          </div>
+
+          <div id="ordersList" class="orders-list" aria-live="polite"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div>
+        <a class="footer-brand" href="index.html">LÚMINA ✳</a>
+        <p>Panel interno del taller.</p>
+      </div>
+      <div>
+        <b>ACCESOS</b><a href="index.html">Ir al sitio</a
+        ><a href="seguimiento.html">Seguimiento público</a
+        ><a href="pedidos.html">Bolsa de compras</a><a href="privacidad.html">Privacidad</a>
+      </div>
+      <div>
+        <b>SEGURIDAD</b>
+        <p>Acceso con Firebase Authentication.</p>
+        <p>Los pedidos se listan solo para administradores autorizados.</p>
+      </div>
+      <div class="footer-bottom">© <span data-year>2026</span> Lúmina Joyería · Uso interno.</div>
+    </footer>
+  </body>
+</html>

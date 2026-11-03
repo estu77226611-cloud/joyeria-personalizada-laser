@@ -1,60 +1,184 @@
-# LÚMINA – Joyería personalizada · versión Web 2.0
+# LÚMINA · Joyería personalizada con grabado láser
 
-## Abrir
-Abre la carpeta con Visual Studio Code y utiliza Live Server en `index.html`. Se puede desplegar sin compilación en GitHub Pages.
+Sitio web estático (HTML + CSS + módulos ES) para una joyería personalizada. Incluye catálogo,
+personalizador, bolsa, registro de pedidos, **seguimiento público por código tipo Shalom**,
+comunidad y un panel de administración.
 
-## Cambios
-- 19 fotografías proporcionadas por el propietario del proyecto, optimizadas para la web, en `assets/productos/`. Confirma que tienes permiso de uso/publicación de todas ellas.
-- Catálogo con fotografías, filtros, personalizador, carrito, galería y botón WhatsApp.
-- WhatsApp mantenido sin modificaciones: `js/whatsapp.js` (51936099354).
-- Corregido el error de `comunidad.html`: antes había dos atributos `id` en el mismo elemento; JavaScript no encontraba `commentsList`. Ahora comentarios locales aparecen y persisten tras F5 en el mismo navegador.
-- Comentarios públicos Web 2.0 preparados para Firebase Firestore.
+> Proyecto académico. Los precios, materiales, fotografías y datos legales son referenciales y
+> deben confirmarse antes de usarlo con clientes reales.
 
-## Activar comentarios públicos para todos los usuarios
-1. En https://console.firebase.google.com/ crea un proyecto.
-2. Agrega una aplicación web y copia la configuración en `js/firebase-config.js` (apiKey, authDomain, projectId, appId).
-3. Ve a Firestore Database y crea una base de datos.
-4. Publica reglas de Firestore para colección `comentarios` (abajo). Es recomendable configurar también App Check, autenticación, moderación, límites por usuario y supervisión de costos antes de habilitar publicación abierta.
-5. Sube estos cambios a GitHub y prueba desde dos navegadores.
+---
 
-Ejemplo de reglas **para pruebas controladas** (NO son protección anti-spam; evita dejarlas abiertas en un sitio público sin medidas adicionales):
+## 1. Cómo abrirlo
 
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /comentarios/{comentarioId} {
-      allow read: if true;
-      allow create: if request.resource.data.keys().hasOnly(['nombre','texto','creado'])
-        && request.resource.data.nombre is string
-        && request.resource.data.nombre.size() >= 1
-        && request.resource.data.nombre.size() <= 40
-        && request.resource.data.texto is string
-        && request.resource.data.texto.size() >= 1
-        && request.resource.data.texto.size() <= 280
-        && request.resource.data.creado == request.time;
-      allow update, delete: if false;
-    }
-  }
-}
+Los módulos ES no funcionan abriendo el archivo con doble clic (`file://`). Necesitas un servidor
+local o publicar el sitio:
+
+**Opción A — VS Code + Live Server**
+
+1. Abre la carpeta del proyecto en VS Code.
+2. Clic derecho en `index.html` → **Open with Live Server**.
+
+**Opción B — Python**
+
+```bash
+python -m http.server 5173
 ```
 
-**Nota:** En modo sin Firebase, cada visitante ve solo sus propios comentarios locales. La web puede captar consultas de WhatsApp, pero no procesa pagos ni acredita entregas por sí sola; confirma los pedidos con el cliente. No se recomienda anunciar pagos/envíos como disponibles hasta contar con los mecanismos operativos. Precios del catálogo son referenciales y editables en `js/tienda.js`.
+Abre <http://localhost:5173>.
 
-## Actualizar en GitHub
-Desde la carpeta del proyecto con Git configurado:
-`git add .`
-`git commit -m "Actualización diseño y comunidad"`
-`git push origin main`
+**Opción C — Node**
 
-## Corrección de fotografías
-Se eliminó una captura de pantalla que por error había sido incluida como `joya-01.jpg`. Las fotografías están ahora asociadas a los productos correspondientes. Para actualizar GitHub, copia esta carpeta sobre tu repositorio local y usa `git add .`, `git commit -m "Corregir fotografías del catálogo"`, `git push origin main`.
+```bash
+npm start        # npx serve . -l 5173
+```
 
-## Navegación de comentarios
-En `comunidad.html` se incluye un carrusel horizontal con flechas, desplazamiento táctil y contador. Archivo: `js/carrusel-comentarios.js`. Los comentarios existentes se conservan.
+Para publicar, sube la carpeta a GitHub Pages (rama `main`, carpeta raíz). No requiere compilación.
 
+## 2. Páginas
 
-## Eliminar comentarios de prueba en el carrusel
-En **Comunidad**, pulsa **Gestionar comentarios de este navegador** y después **Eliminar comentario** en la tarjeta que quieras borrar. Confirma la eliminación. Este cambio persiste tras refrescar la página, pero afecta **solo al almacenamiento local del navegador actual**. El botón no equivale a un inicio de sesión de administrador.
+| Página              | Contenido                                                                       |
+| ------------------- | ------------------------------------------------------------------------------- |
+| `index.html`        | Inicio, piezas destacadas, proceso y acceso al seguimiento                      |
+| `catalogo.html`     | 18 piezas visibles con filtros: collares, pulseras, anillos, aretes y conjuntos |
+| `personalizar.html` | Grabado, acabado, vista previa y envío del diseño por WhatsApp                  |
+| `pedidos.html`      | Bolsa, checkout, código de pedido y preguntas frecuentes                        |
+| `seguimiento.html`  | Consulta pública por código, línea de tiempo y guía Shalom                      |
+| `comunidad.html`    | Comentarios locales o públicos (Firestore) y carrusel accesible                 |
+| `admin.html`        | Panel interno: pedidos en tiempo real, estados, guía y notas                    |
+| `privacidad.html`   | Política de privacidad y tratamiento de datos                                   |
 
-Si activas Firebase, el control de borrado local se oculta porque no serviría para eliminar comentarios públicos. Para moderar comentarios de Firestore desde distintos dispositivos necesitas **Firebase Authentication**, una cuenta administradora verificada y **reglas de seguridad de Firestore** que permitan eliminar exclusivamente a esa cuenta. No se debe poner una contraseña de administrador en JavaScript público ni permitir `delete` a todos los usuarios.
+`admin.html` no aparece en el menú y tiene `noindex`. El acceso real está protegido por Firebase
+Authentication y reglas de Firestore.
+
+## 3. Modo demostración vs. Firebase
+
+Sin configurar Firebase, el sitio funciona con **localStorage**:
+
+- Los pedidos, la bolsa y los comentarios viven solo en ese navegador.
+- El panel se desbloquea con las credenciales de demostración:
+
+  ```
+  Correo:   admin@lumina.pe
+  Contraseña: demo1234
+  ```
+
+- En el panel aparece el botón **Crear pedido de ejemplo** para probar los estados.
+- En `pedidos.html` y `seguimiento.html` se avisa que es modo demostración.
+
+Para usar Firebase real (Firestore + Authentication + reglas), sigue
+[`FIREBASE_SETUP.md`](FIREBASE_SETUP.md). Al completar `js/firebase-config.js`, el modo
+demostración se desactiva solo.
+
+## 4. Flujo de un pedido
+
+1. El cliente elige una pieza y la personaliza (texto, acabado, nota).
+2. La bolsa permite cambiar cantidades, quitar artículos y vaciarla.
+3. En `pedidos.html` completa nombre, WhatsApp, tipo de entrega y acepta la privacidad.
+4. Al confirmar se genera un código `LUM-XXXXXXXX` (8 caracteres de un alfabeto de 32).
+5. El cliente guarda el código y consulta el avance en `seguimiento.html?codigo=...`.
+6. El administrador cambia el estado desde `admin.html`; el seguimiento se actualiza en vivo.
+7. El pago, el costo de envío y la fecha se coordinan por WhatsApp.
+
+### Estados
+
+`registrado` → `preparando` → `listo` → `enviado` → `en_transito` → `entregado`
+
+Además existe `cancelado`, que se muestra aparte en la línea de tiempo.
+
+### Entregas
+
+- **Recojo en el taller**: sin costo de envío.
+- **Delivery en Lima**: costo coordinado por WhatsApp según el distrito.
+- **Shalom (provincias)**: el administrador registra el número de guía y el seguimiento enlaza a
+  <https://rastrea.shalom.pe/>. Shalom no ofrece API pública, así que no hay actualización
+  automática de estados.
+
+## 5. Estructura
+
+```
+├─ index.html · catalogo.html · personalizar.html · comunidad.html
+├─ pedidos.html · seguimiento.html · admin.html · privacidad.html
+├─ css/estilos.css          Estilos del sitio + bloque de mejoras 2026
+├─ js/
+│  ├─ config.js             Teléfono, URL, estados, entregas, códigos y formato de dinero
+│  ├─ productos.js          Catálogo y filtros
+│  ├─ store.js              Capa de datos demo/Firebase: bolsa, pedidos, comentarios, auth
+│  ├─ firebase.js           Carga diferida del SDK modular
+│  ├─ firebase-config.js    Configuración del proyecto (vacía por defecto)
+│  ├─ ui.js                 Toasts, diálogo, fechas, copiado y helpers DOM
+│  ├─ carrito.js            Contador y renderizado de la bolsa
+│  ├─ producto-card.js      Tarjeta reutilizable de producto
+│  ├─ main.js               Menú, contador, año y WhatsApp flotante
+│  ├─ inicio.js · catalogo.js · personalizar.js
+│  ├─ pedidos.js · seguimiento.js · admin.js · comunidad.js
+│  └─ whatsapp.js
+├─ assets/productos/        Fotografías de referencia
+├─ firestore.rules          Reglas de seguridad para Firestore
+├─ FIREBASE_SETUP.md        Guía paso a paso de Firebase
+├─ robots.txt · sitemap.xml · favicon
+└─ package.json             Scripts de servidor y formato
+```
+
+## 6. Datos que faltan confirmar
+
+- Precios, materiales y medidas: hoy son **referenciales**. Se editan en `js/productos.js`.
+- Número de WhatsApp: `WHATSAPP_NUMERO` en `js/config.js` (actualmente `51936099354`).
+- Dominio definitivo: `SITE_URL` en `js/config.js`, etiquetas `canonical`/`og:url`, `robots.txt`
+  y `sitemap.xml`.
+- Datos legales del negocio (razón social, RUC, dirección, correo): `privacidad.html` y pie.
+- Derechos de uso de las 19 fotografías de `assets/productos/`.
+- `joya-17.jpg` mide 299×168 px y duplica el modelo de `joya-12`. La pieza está **oculta** en el
+  catálogo hasta reemplazar la foto.
+- `joya-18` se reclasificó como **aretes**; las piezas 08, 09 y 14 forman la categoría **Conjuntos**.
+
+## 7. Decisiones técnicas
+
+- **Sin cuentas de cliente**: el código del pedido es la llave de consulta. La colección no se
+  puede listar sin ser administrador, y el código tiene ~1.1 × 10¹² combinaciones.
+- **Cliente y dirección dentro del pedido**: el documento `pedidos/{codigo}` contiene el contacto
+  y la dirección para que el administrador gestione la entrega. Solo se accede a él con el código
+  exacto o con sesión de administrador.
+- **Firebase Spark**: sin Cloud Functions ni Storage. La foto de referencia no se sube.
+- **Módulos ES sin build**: el SDK de Firebase se carga solo si hay configuración, desde
+  `https://www.gstatic.com/firebasejs/11.10.0`.
+- **Accesibilidad**: foco visible, `skip-link`, toasts con `aria-live`, diálogos `<dialog>`,
+  etiquetas asociadas, contraste corregido y respeto a `prefers-reduced-motion`.
+
+## 8. Scripts
+
+```bash
+npm install        # instala Prettier (solo desarrollo)
+npm start          # servidor local en http://localhost:5173
+npm run format     # formatea JS, HTML y Markdown
+npm run format:check
+```
+
+También puedes validar la sintaxis de los módulos con:
+
+```bash
+node --check js/store.js
+```
+
+## 9. Verificación rápida antes de entregar
+
+- [ ] `index.html` muestra 6 piezas destacadas y el contador de bolsa funciona.
+- [ ] Los filtros del catálogo actualizan la URL (`?tipo=anillo`).
+- [ ] El personalizador guarda en la bolsa y el enlace de WhatsApp lleva el mensaje.
+- [ ] El checkout valida nombre, teléfono, entrega y privacidad.
+- [ ] Al confirmar aparece el código y el enlace al seguimiento.
+- [ ] El seguimiento muestra la línea de tiempo y el estado real.
+- [ ] El panel de demostración entra con `admin@lumina.pe` / `demo1234`.
+- [ ] Cambiar el estado en el panel se refleja en el seguimiento.
+- [ ] La consola del navegador no muestra errores.
+- [ ] Lighthouse móvil ≥ 90 en Rendimiento, Accesibilidad y Buenas prácticas.
+
+## 10. Publicar cambios
+
+```bash
+git add .
+git commit -m "Pedidos con Firebase, seguimiento por código y panel admin"
+git push origin main
+```
+
+Repositorio: <https://github.com/estu77226611-cloud/joyeria-personalizada-laser>

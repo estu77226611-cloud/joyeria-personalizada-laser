@@ -1,0 +1,138 @@
+rules_version = '2';
+
+/* Lúmina Joyería — reglas de Firestore.
+   - Cualquiera puede consultar un pedido concreto si conoce su código.
+   - Solo el administrador puede listar todos los pedidos y cambiarlos.
+   - Los comentarios son públicos para leer y crear; solo el administrador borra.
+   - Colección admins: documentos { uid } creados a mano desde la consola. */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isTex(value, maximo) {
+      return value is string && value.size() <= maximo;
+    }
+
+    function isNumeroPositivo(value) {
+      return value is number && value >= 0;
+    }
+
+    function clavesExactas(datos, permitidas) {
+      return datos.keys().hasOnly(permitidas) && datos.keys().hasAll(permitidas);
+    }
+
+    function clavesDentro(datos, permitidas, obligatorias) {
+      return datos.keys().hasOnly(permitidas) && datos.keys().hasAll(obligatorias);
+    }
+
+    /* Firestore Rules no permite recorrer listas: validamos la forma del
+       primer artículo y los límites generales de la lista. El resto de
+       artículos se pinta con textContent en la interfaz, sin HTML. */
+    function itemsValidos(items) {
+      return items is list
+        && items.size() > 0
+        && items.size() <= 40
+        && items[0] is map
+        && clavesExactas(items[0], ['id', 'nombre', 'precio', 'cantidad', 'grabado', 'acabado', 'nota'])
+        && items[0].id is int
+        && items[0].id > 0
+        && isTex(items[0].nombre, 120)
+        && isNumeroPositivo(items[0].precio)
+        && items[0].cantidad is int
+        && items[0].cantidad >= 1
+        && items[0].cantidad <= 20
+        && isTex(items[0].grabado, 60)
+        && items[0].acabado in ['dorado', 'plateado']
+        && isTex(items[0].nota, 300);
+    }
+
+    function historialInicialValido(historial) {
+      return historial is list
+        && historial.size() == 1
+        && historial[0] is map
+        && clavesExactas(historial[0], ['estado', 'fecha', 'nota'])
+        && historial[0].estado == 'registrado'
+        && historial[0].fecha is number
+        && isTex(historial[0].nota, 400);
+    }
+
+    function entregaValida(entrega) {
+      return entrega is map
+        && clavesExactas(entrega, ['tipo', 'distrito', 'direccion', 'referencia', 'agencia', 'guia'])
+        && entrega.tipo in ['recojo', 'delivery', 'shalom']
+        && isTex(entrega.distrito, 80)
+        && isTex(entrega.direccion, 200)
+        && isTex(entrega.referencia, 200)
+        && isTex(entrega.agencia, 120)
+        && entrega.guia == '';
+    }
+
+    function clienteValido(cliente) {
+      return cliente is map
+        && clavesExactas(cliente, ['nombre', 'telefono'])
+        && isTex(cliente.nombre, 80)
+        && cliente.nombre.size() >= 3
+        && isTex(cliente.telefono, 20)
+        && cliente.telefono.size() >= 6;
+    }
+
+    match /pedidos/{codigo} {
+      // Consulta puntual con el código: es la "llave" del seguimiento.
+      allow get: if true;
+
+      // Nadie puede enumerar pedidos salvo el administrador.
+      allow list: if isAdmin();
+
+      allow create: if codigo.matches('^LUM-[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{8}$')
+        && request.resource.data.codigo == codigo
+        && clavesExactas(request.resource.data, [
+          'codigo', 'creado', 'actualizado', 'estado', 'historial',
+          'items', 'total', 'entrega', 'cliente', 'notas', 'notasAdmin'
+        ])
+        && request.resource.data.estado == 'registrado'
+        && historialInicialValido(request.resource.data.historial)
+        && itemsValidos(request.resource.data.items)
+        && isNumeroPositivo(request.resource.data.total)
+        && entregaValida(request.resource.data.entrega)
+        && clienteValido(request.resource.data.cliente)
+        && isTex(request.resource.data.notas, 400)
+        && request.resource.data.notasAdmin == '';
+
+      allow update, delete: if isAdmin();
+    }
+
+    match /comentarios/{comentario} {
+      allow read: if true;
+
+      allow create: if clavesExactas(request.resource.data, ['nombre', 'texto', 'creado'])
+        && isTex(request.resource.data.nombre, 40)
+        && request.resource.data.nombre.size() >= 2
+        && isTex(request.resource.data.texto, 280)
+        && request.resource.data.texto.size() >= 2
+        && request.resource.data.creado is number;
+
+      allow update, delete: if isAdmin();
+    }
+
+    match /admins/{uid} {
+      // Solo se consulta el propio documento durante el inicio de sesión.
+      allow get: if signedIn() && request.auth.uid == uid;
+      // Los administradores se crean a mano desde la consola de Firebase.
+      allow create, update, delete: if false;
+    }
+
+    // Bloquea cualquier colección no declarada.
+    match /{documento=**} {
+      allow read, write: if false;
+    }
+  }
+}

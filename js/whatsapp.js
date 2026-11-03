@@ -1,18 +1,26 @@
-/* BOTÓN WHATSAPP: escribe tu número real con código de país, sin + ni espacios.
-   Ejemplo de formato para Perú: 51 seguido de 9 dígitos.
-   Déjalo vacío hasta tener el número de atención de la joyería. */
-const NUMERO_WHATSAPP = '51936099354';
-const MENSAJE_WHATSAPP = 'Hola, quisiera información sobre las joyas personalizadas y los pedidos.';
+/* WhatsApp: un único lugar para construir los enlaces y el botón flotante. */
 
-const botonWhatsApp = document.getElementById('whatsappFloat');
-const avisoWhatsApp = document.getElementById('whatsappNotice');
-if (botonWhatsApp) {
-  botonWhatsApp.addEventListener('click', () => {
-    if (!/^\d{10,15}$/.test(NUMERO_WHATSAPP)) {
-      avisoWhatsApp.hidden = false;
-      avisoWhatsApp.textContent = 'WhatsApp aún no está configurado. Escribe el número real en js/whatsapp.js (NUMERO_WHATSAPP).';
-      return;
-    }
-    window.open('https://wa.me/' + NUMERO_WHATSAPP + '?text=' + encodeURIComponent(MENSAJE_WHATSAPP), '_blank', 'noopener,noreferrer');
-  });
+import { WHATSAPP_MENSAJE, WHATSAPP_NUMERO } from './config.js';
+import { aviso, qs } from './ui.js';
+
+export function urlWhatsApp(mensaje = WHATSAPP_MENSAJE) {
+  const numero = String(WHATSAPP_NUMERO || '').replace(/\D/g, '');
+  if (!/^\d{10,15}$/.test(numero)) return null;
+  return `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
+}
+
+export function abrirWhatsApp(mensaje = WHATSAPP_MENSAJE) {
+  const url = urlWhatsApp(mensaje);
+  if (!url) {
+    aviso('WhatsApp aún no está configurado. Revisa el número en js/config.js.', 'error');
+    return false;
+  }
+  window.open(url, '_blank', 'noopener,noreferrer');
+  return true;
+}
+
+export function iniciarWhatsAppFlotante() {
+  const boton = qs('#whatsappFloat');
+  if (!boton) return;
+  boton.addEventListener('click', () => abrirWhatsApp());
 }

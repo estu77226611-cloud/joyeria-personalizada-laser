@@ -1,32 +1,218 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Lúmina: joyería personalizada mediante grabado láser.">
-  <title>Comunidad | Lúmina Joyería</title>
-  <link rel="stylesheet" href="css/estilos.css">
-  <script src="js/tienda.js" defer></script>
-</head>
-<body>
-  <div class="announcement">✧ Joyas personalizadas · Diseños con significado · Atención por WhatsApp</div>
-  <header class="site-header">
-    <a class="logo" href="index.html" aria-label="Lúmina, ir al inicio">LÚMINA<span>✳</span><small>JOYERÍA LÁSER</small></a>
-    <button class="menu-toggle" id="menuToggle" aria-label="Mostrar navegación" aria-expanded="false">☰ Menú</button>
-    <nav class="nav" id="mainNav" aria-label="Menú principal"><a href="index.html">Inicio</a><a href="catalogo.html">Catálogo</a><a href="personalizar.html">Personalizar</a><a href="comunidad.html" class="active" aria-current="page">Comunidad</a><a href="pedidos.html">Pedidos y ayuda</a></nav>
-    <a class="cart-link" href="pedidos.html">Bolsa <span id="cartCount">0</span></a>
-  </header>
-  <main><section class="page-intro community-intro"><span class="overline">COMUNIDAD LÚMINA</span><h1>Historias que<br><i>merecen contarse.</i></h1><p>Un espacio para inspirarte, compartir ideas y dejar comentarios sobre nuestra colección.</p></section><section class="section community-grid"><div><span class="overline">INSPIRACIÓN PARA REGALAR</span><h2>Pequeños detalles,<br><i>grandes recuerdos.</i></h2><div class="inspo-grid" id="fotos"><figure><img src="assets/productos/joya-10.jpg" alt="Collar para un regalo especial"><figcaption>Para alguien que siempre está contigo ↗</figcaption></figure><figure><img src="assets/productos/joya-04.jpg" alt="Pulsera con dije personalizable"><figcaption>Para celebrar un nuevo comienzo ↗</figcaption></figure></div></div><div><span class="overline">TU VOZ CUENTA</span><h2>Comparte <i>tu idea.</i></h2><p>Cuéntanos qué pieza te gustaría crear y comparte tu experiencia.</p><form id="commentForm" class="comment-form"><label for="commentName">Tu nombre</label><input id="commentName" maxlength="40" placeholder="¿Cómo te llamas?" required><label for="commentText">Tu comentario</label><textarea id="commentText" rows="4" maxlength="280" required placeholder="¿Qué joya te gustaría personalizar?"></textarea><button class="button dark" type="submit">Publicar comentario ↗</button><div id="commentFeedback" class="form-message" role="status"></div></form><section id="resenas" aria-label="Reseñas de nuestra comunidad"><h3 class="comments-heading">Comentarios de la comunidad</h3><div class="comment-carousel" aria-label="Carrusel de comentarios"><button class="comment-arrow" id="commentsPrev" type="button" aria-label="Ver comentarios anteriores">&#8592;</button><div class="comments" id="commentsList" aria-live="polite" tabindex="0"></div><button class="comment-arrow" id="commentsNext" type="button" aria-label="Ver más comentarios">&#8594;</button></div><p class="comments-counter" id="commentsCounter" aria-live="polite">Desliza para leer los comentarios</p><div class="comments-tools"><button type="button" id="toggleCommentManager" class="share-button" aria-pressed="false">Gestionar comentarios de este navegador</button><p id="commentManagerNote" class="comments-manager-note" hidden>Podrás borrar los comentarios guardados en este navegador. Para moderar comentarios públicos desde otros dispositivos se necesita Firebase Authentication y reglas de Firestore.</p></div></section><div id="compartir"><button id="shareButton" class="share-button">↗ Compartir la tienda</button></div></div></section></main>
-  <footer class="footer"><div><a class="footer-brand" href="index.html">LÚMINA ✳</a><p>Una joya, una historia que permanece.</p></div><div><b>EXPLORA</b><a href="catalogo.html">Colección</a><a href="personalizar.html">Diseña tu joya</a><a href="pedidos.html">Ayuda y pedidos</a></div><div><b>INFORMACIÓN</b><p>Joyería personalizada · Perú</p><p>Confirma materiales, disponibilidad y entregas por WhatsApp.</p></div><div class="footer-bottom">© 2026 Lúmina Joyería · Hecho para guardar tus momentos.</div></footer>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#a7734c" />
+    <meta
+      name="description"
+      content="Comunidad Lúmina: comparte tu idea, lee comentarios de otros clientes y encuentra inspiración para tu próxima joya personalizada."
+    />
+    <title>Comunidad e ideas | Lúmina Joyería</title>
+    <link
+      rel="canonical"
+      href="https://estu77226611-cloud.github.io/joyeria-personalizada-laser/comunidad.html"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Lúmina Joyería" />
+    <meta property="og:locale" content="es_PE" />
+    <meta property="og:title" content="Comunidad Lúmina | Historias y comentarios" />
+    <meta
+      property="og:description"
+      content="Comparte tu idea y descubre las historias que inspiran nuestras joyas personalizadas."
+    />
+    <meta
+      property="og:url"
+      content="https://estu77226611-cloud.github.io/joyeria-personalizada-laser/comunidad.html"
+    />
+    <meta
+      property="og:image"
+      content="https://estu77226611-cloud.github.io/joyeria-personalizada-laser/assets/productos/joya-04.jpg"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="assets/favicon-180.png" />
+    <link rel="stylesheet" href="css/estilos.css?v=20261103b" />
+    <script type="module" src="js/main.js"></script>
+    <script type="module" src="js/comunidad.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+    <div class="announcement" role="region" aria-label="Información de la tienda">
+      ✧ Joyas personalizadas · Diseños con significado · Seguimiento de pedidos por código
+    </div>
+    <header class="site-header">
+      <a class="logo" href="index.html" aria-label="LÚMINA ✳ JOYERÍA LÁSER — ir al inicio"
+        >LÚMINA<span aria-hidden="true">✳</span><small>JOYERÍA LÁSER</small></a
+      >
+      <button
+        class="menu-toggle"
+        id="menuToggle"
+        type="button"
+        aria-label="Mostrar navegación"
+        aria-expanded="false"
+        aria-controls="mainNav"
+      >
+        ☰ Menú
+      </button>
+      <nav class="nav" id="mainNav" aria-label="Menú principal">
+        <a href="index.html">Inicio</a>
+        <a href="catalogo.html">Catálogo</a>
+        <a href="personalizar.html">Personalizar</a>
+        <a href="comunidad.html" class="active" aria-current="page">Comunidad</a>
+        <a href="seguimiento.html">Seguimiento</a>
+        <a href="pedidos.html">Pedidos y ayuda</a>
+      </nav>
+      <a class="cart-link" href="pedidos.html">Bolsa <span id="cartCount">0</span></a>
+    </header>
 
-  <!-- Botón flotante de WhatsApp: cambia el teléfono en js/whatsapp.js -->
-  <button class="whatsapp-float" id="whatsappFloat" type="button" aria-label="Consultar por WhatsApp" title="Consultar por WhatsApp">
-    <svg viewBox="0 0 32 32" width="27" height="27" aria-hidden="true" fill="currentColor"><path d="M16.01 3C8.84 3 3 8.84 3 16c0 2.3.61 4.54 1.76 6.52L3 29l6.65-1.74A12.92 12.92 0 0 0 16.01 29C23.17 29 29 23.16 29 16S23.17 3 16.01 3Zm0 23.61c-2.01 0-3.98-.54-5.71-1.56l-.41-.24-3.95 1.04L7 22.01l-.27-.43A10.53 10.53 0 0 1 5.4 16c0-5.85 4.76-10.61 10.61-10.61S26.62 10.15 26.62 16s-4.76 10.61-10.61 10.61Zm5.82-7.93c-.32-.16-1.89-.93-2.18-1.04-.29-.1-.5-.16-.71.16-.21.31-.82 1.04-1 1.25-.18.21-.37.23-.69.08a8.7 8.7 0 0 1-2.57-1.58 9.63 9.63 0 0 1-1.78-2.21c-.19-.32-.02-.49.14-.65.14-.14.32-.37.48-.56.16-.18.21-.32.32-.53.11-.21.05-.4-.03-.56-.08-.16-.71-1.72-.98-2.35-.25-.61-.51-.53-.71-.54h-.61c-.21 0-.56.08-.85.4s-1.11 1.09-1.11 2.66 1.14 3.09 1.3 3.3c.16.21 2.24 3.42 5.42 4.79.76.33 1.36.53 1.82.68.77.25 1.48.21 2.04.13.62-.09 1.89-.77 2.16-1.51.27-.74.27-1.38.19-1.51-.08-.13-.29-.21-.61-.37Z"/></svg>
-    <span>WhatsApp</span>
-  </button>
-  <div class="whatsapp-notice" id="whatsappNotice" role="status" hidden></div>
-  <script src="js/whatsapp.js" defer></script>
-  <script type="module" src="js/comunidad-online.js"></script>
-  <script src="js/carrusel-comentarios.js" defer></script>
-</body>
+    <main id="contenido">
+      <section class="page-intro community-intro">
+        <span class="overline">COMUNIDAD LÚMINA</span>
+        <h1>Historias que<br /><i>merecen contarse.</i></h1>
+        <p>
+          Un espacio para inspirarte, compartir ideas y dejar comentarios sobre nuestra colección.
+        </p>
+      </section>
+
+      <section class="section community-grid">
+        <div>
+          <span class="overline">INSPIRACIÓN PARA REGALAR</span>
+          <h2>Pequeños detalles,<br /><i>grandes recuerdos.</i></h2>
+          <div class="inspo-grid" id="fotos">
+            <figure>
+              <img
+                src="assets/productos/joya-10.jpg"
+                alt="Collar para un regalo especial"
+                width="500"
+                height="500"
+                loading="lazy"
+              />
+              <figcaption>Para alguien que siempre está contigo ↗</figcaption>
+            </figure>
+            <figure>
+              <img
+                src="assets/productos/joya-04.jpg"
+                alt="Pulsera con dije personalizable"
+                width="500"
+                height="625"
+                loading="lazy"
+              />
+              <figcaption>Para celebrar un nuevo comienzo ↗</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <div>
+          <span class="overline">TU VOZ CUENTA</span>
+          <h2>Comparte <i>tu idea.</i></h2>
+          <p>Cuéntanos qué pieza te gustaría crear y comparte tu experiencia.</p>
+          <form id="commentForm" class="comment-form">
+            <label for="commentName">Tu nombre</label>
+            <input
+              id="commentName"
+              maxlength="40"
+              placeholder="¿Cómo te llamas?"
+              required
+              autocomplete="name"
+            />
+            <label for="commentText">Tu comentario</label>
+            <textarea
+              id="commentText"
+              rows="4"
+              maxlength="280"
+              required
+              placeholder="¿Qué joya te gustaría personalizar?"
+            ></textarea>
+            <button class="button dark" type="submit">Publicar comentario ↗</button>
+            <div id="commentFeedback" class="form-message" role="status"></div>
+          </form>
+
+          <section id="resenas" aria-labelledby="resenas-title">
+            <h3 class="comments-heading" id="resenas-title">Comentarios de la comunidad</h3>
+            <div class="comment-carousel" role="group" aria-label="Carrusel de comentarios">
+              <button
+                class="comment-arrow"
+                id="commentsPrev"
+                type="button"
+                aria-label="Ver comentarios anteriores"
+              >
+                &#8592;
+              </button>
+              <div class="comments" id="commentsList" aria-live="polite" tabindex="0"></div>
+              <button
+                class="comment-arrow"
+                id="commentsNext"
+                type="button"
+                aria-label="Ver más comentarios"
+              >
+                &#8594;
+              </button>
+            </div>
+            <p class="comments-counter" id="commentsCounter" aria-live="polite">
+              Aún no hay comentarios
+            </p>
+            <div class="comments-tools">
+              <button
+                type="button"
+                id="toggleCommentManager"
+                class="share-button"
+                aria-pressed="false"
+              >
+                Gestionar comentarios de este navegador
+              </button>
+              <p id="commentManagerNote" class="comments-manager-note" hidden>
+                Podrás borrar los comentarios guardados en este navegador. Para moderar comentarios
+                públicos desde otros dispositivos se necesita Firebase Authentication y reglas de
+                Firestore.
+              </p>
+            </div>
+          </section>
+
+          <div id="compartir">
+            <button id="shareButton" class="share-button" type="button">
+              ✳ Compartir la tienda
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div>
+        <a class="footer-brand" href="index.html">LÚMINA ✳</a>
+        <p>Una joya, una historia que permanece.</p>
+      </div>
+      <div>
+        <b>EXPLORA</b><a href="catalogo.html">Colección</a
+        ><a href="personalizar.html">Diseña tu joya</a><a href="seguimiento.html">Seguimiento</a
+        ><a href="comunidad.html">Comunidad</a>
+      </div>
+      <div>
+        <b>INFORMACIÓN</b>
+        <p>Joyería personalizada · Lima, Perú</p>
+        <p>Confirma materiales, disponibilidad y entregas por WhatsApp.</p>
+        <p><a href="privacidad.html">Política de privacidad</a></p>
+      </div>
+      <div class="footer-bottom">
+        © <span data-year>2026</span> Lúmina Joyería · Hecho para guardar tus momentos.
+      </div>
+    </footer>
+
+    <button
+      class="whatsapp-float"
+      id="whatsappFloat"
+      type="button"
+      aria-label="Consultar por WhatsApp"
+      title="Consultar por WhatsApp"
+    >
+      <svg viewBox="0 0 32 32" width="27" height="27" aria-hidden="true" fill="currentColor">
+        <path
+          d="M16.01 3C8.84 3 3 8.84 3 16c0 2.3.61 4.54 1.76 6.52L3 29l6.65-1.74A12.92 12.92 0 0 0 16.01 29C23.17 29 29 23.16 29 16S23.17 3 16.01 3Zm0 23.61c-2.01 0-3.98-.54-5.71-1.56l-.41-.24-3.95 1.04L7 22.01l-.27-.43A10.53 10.53 0 0 1 5.4 16c0-5.85 4.76-10.61 10.61-10.61S26.62 10.15 26.62 16s-4.76 10.61-10.61 10.61Zm5.82-7.93c-.32-.16-1.89-.93-2.18-1.04-.29-.1-.5-.16-.71.16-.21.31-.82 1.04-1 1.25-.18.21-.37.23-.69.08a8.7 8.7 0 0 1-2.57-1.58 9.63 9.63 0 0 1-1.78-2.21c-.19-.32-.02-.49.14-.65.14-.14.32-.37.48-.56.16-.18.21-.32.32-.53.11-.21.05-.4-.03-.56-.08-.16-.71-1.72-.98-2.35-.25-.61-.51-.53-.71-.54h-.61c-.21 0-.56.08-.85.4s-1.11 1.09-1.11 2.66 1.14 3.09 1.3 3.3c.16.21 2.24 3.42 5.42 4.79.76.33 1.36.53 1.82.68.77.25 1.48.21 2.04.13.62-.09 1.89-.77 2.16-1.51.27-.74.27-1.38.19-1.51-.08-.13-.29-.21-.61-.37Z"
+        />
+      </svg>
+      <span>WhatsApp</span>
+    </button>
+    <div class="whatsapp-notice" id="whatsappNotice" role="status" hidden></div>
+  </body>
 </html>

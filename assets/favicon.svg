@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Lúmina Joyería">
+  <rect width="64" height="64" rx="14" fill="#2b2723"/>
+  <path d="M32 8l5 15.5L52 28l-11.4 9 3.9 15.5L32 43.6 19.5 52.5l3.9-15.5L12 28l15-4.5z" fill="#a7734c"/>
+  <circle cx="32" cy="31" r="5.2" fill="#fcfaf6"/>
+</svg>

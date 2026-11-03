@@ -1,0 +1,18 @@
+node_modules/
+.vscode/
+.idea/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Firebase CLI
+.firebase/
+firebase-debug.log
+firestore-debug.log
+
+# Variables y archivos locales
+.env
+.env.*
+*.local
