@@ -614,6 +614,38 @@ export function suscribirPedidos(alCambiar, alFallar) {
   };
 }
 
+/* Repara pedidos antiguos o creados sin conexión que no tienen documento
+   público. Sin ese documento, el seguimiento por código responde
+   "No encontramos un pedido". Solo escribe los que faltan. */
+export async function repararSeguimientos(pedidos) {
+  if (esModoDemo || !Array.isArray(pedidos) || pedidos.length === 0) return 0;
+
+  const firebase = await cargarFirebase();
+  const { db, fs } = firebase;
+  const revisados = await Promise.all(
+    pedidos.map(async (pedido) => {
+      const codigo = normalizarCodigo(pedido.codigo);
+      if (!codigoValido(codigo)) return null;
+      try {
+        const documento = await fs.getDoc(fs.doc(db, 'seguimientos', codigo));
+        return documento.exists() ? null : { codigo, pedido };
+      } catch {
+        return null;
+      }
+    })
+  );
+
+  const faltantes = revisados.filter(Boolean);
+  if (faltantes.length === 0) return 0;
+
+  const lote = fs.writeBatch(db);
+  for (const { codigo, pedido } of faltantes) {
+    lote.set(fs.doc(db, 'seguimientos', codigo), resumenPublico(pedido));
+  }
+  await lote.commit();
+  return faltantes.length;
+}
+
 export async function actualizarPedido(codigo, { estado, guia, notasAdmin } = {}) {
   const normalizado = normalizarCodigo(codigo);
   if (!codigoValido(normalizado)) throw new Error('Código de pedido inválido.');

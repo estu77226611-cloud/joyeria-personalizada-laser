@@ -15,6 +15,7 @@ import {
   entrarAdmin,
   esModoDemo,
   observarSesion,
+  repararSeguimientos,
   salirAdmin,
   suscribirPedidos
 } from './store.js';
@@ -42,6 +43,7 @@ function iniciar() {
   let pedidos = [];
   let detenerPedidos = () => {};
   let detenerSesion = () => {};
+  let reparacionHecha = false;
 
   if (credenciales && esModoDemo) {
     credenciales.hidden = false;
@@ -273,6 +275,12 @@ function iniciar() {
       (nuevos) => {
         pedidos = nuevos;
         filtrar();
+        // Pedidos anteriores a la sincronización pública: se crea su
+        // documento de seguimiento para que el código funcione.
+        if (!reparacionHecha && nuevos.length > 0) {
+          reparacionHecha = true;
+          repararSeguimientos(nuevos).catch(() => {});
+        }
       },
       () => {
         if (lista) {
