@@ -1,8 +1,8 @@
 /* Inicio: muestra solo las piezas destacadas, no todo el catálogo. */
 
-import { productosDestacados } from './productos.js';
-import { crearTarjeta } from './producto-card.js';
-import { qs } from './ui.js';
+import { productosDestacados } from './productos.js?v=20261104b';
+import { crearTarjeta } from './producto-card.js?v=20261104b';
+import { qs } from './ui.js?v=20261104b';
 
 function iniciar() {
   const contenedor = qs('#featuredProducts');

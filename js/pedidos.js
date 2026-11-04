@@ -1,10 +1,22 @@
 /* Pedidos y checkout: bolsa, validación y creación del pedido con código. */
 
-import { ENTREGAS, ENVIO_TEXTO, dinero, entregaPorId, urlSeguimiento } from './config.js';
-import { renderBolsa } from './carrito.js';
-import { crearPedido, detalleBolsa, esModoDemo, ultimoPedido, vaciarBolsa } from './store.js';
-import { abrirWhatsApp } from './whatsapp.js';
-import { aviso, copiarTexto, crear, fechaHora, pedirConfirmacion, qs } from './ui.js';
+import {
+  ENTREGAS,
+  ENVIO_TEXTO,
+  dinero,
+  entregaPorId,
+  urlSeguimiento
+} from './config.js?v=20261104b';
+import { renderBolsa } from './carrito.js?v=20261104b';
+import {
+  crearPedido,
+  detalleBolsa,
+  esModoDemo,
+  ultimoPedido,
+  vaciarBolsa
+} from './store.js?v=20261104b';
+import { abrirWhatsApp } from './whatsapp.js?v=20261104b';
+import { aviso, copiarTexto, crear, fechaHora, pedirConfirmacion, qs } from './ui.js?v=20261104b';
 
 const OBLIGATORIOS_ENTREGA = new Set(['deliveryDistrito', 'deliveryDireccion', 'deliveryAgencia']);
 

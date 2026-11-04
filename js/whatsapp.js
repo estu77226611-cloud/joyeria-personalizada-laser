@@ -1,7 +1,7 @@
 /* WhatsApp: un único lugar para construir los enlaces y el botón flotante. */
 
-import { WHATSAPP_MENSAJE, WHATSAPP_NUMERO } from './config.js';
-import { aviso, qs } from './ui.js';
+import { WHATSAPP_MENSAJE, WHATSAPP_NUMERO } from './config.js?v=20261104b';
+import { aviso, qs } from './ui.js?v=20261104b';
 
 export function urlWhatsApp(mensaje = WHATSAPP_MENSAJE) {
   const numero = String(WHATSAPP_NUMERO || '').replace(/\D/g, '');

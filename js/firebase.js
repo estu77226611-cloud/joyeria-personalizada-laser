@@ -2,7 +2,7 @@
    Solo se descarga si js/firebase-config.js tiene datos válidos.
    Usamos la versión modular desde gstatic para no necesitar compilación. */
 
-import { firebaseConfig } from './firebase-config.js';
+import { firebaseConfig } from './firebase-config.js?v=20261104b';
 
 const SDK = 'https://www.gstatic.com/firebasejs/11.10.0';
 

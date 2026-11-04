@@ -1,8 +1,8 @@
 /* Tarjeta de producto reutilizable (inicio y catálogo). */
 
-import { dinero } from './config.js';
-import { agregarProducto } from './store.js';
-import { aviso, crear } from './ui.js';
+import { dinero } from './config.js?v=20261104b';
+import { agregarProducto } from './store.js?v=20261104b';
+import { aviso, crear } from './ui.js?v=20261104b';
 
 export function crearTarjeta(producto, { prioridad = false } = {}) {
   const imagen = crear('img', {

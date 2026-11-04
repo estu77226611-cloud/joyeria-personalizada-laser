@@ -1,8 +1,8 @@
 /* Arranque común: contador de la bolsa, menú móvil, año del pie y WhatsApp. */
 
-import { iniciarContador } from './carrito.js';
-import { iniciarWhatsAppFlotante } from './whatsapp.js';
-import { qsa, qs } from './ui.js';
+import { iniciarContador } from './carrito.js?v=20261104b';
+import { iniciarWhatsAppFlotante } from './whatsapp.js?v=20261104b';
+import { qsa, qs } from './ui.js?v=20261104b';
 
 function iniciarMenu() {
   const boton = qs('#menuToggle');

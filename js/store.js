@@ -14,9 +14,9 @@ import {
   codigoValido,
   estadoPorId,
   normalizarCodigo
-} from './config.js';
-import { PRODUCTOS_VISIBLES, productoPorId } from './productos.js';
-import { cargarFirebase, firebaseConfigurado, COLECCIONES } from './firebase.js';
+} from './config.js?v=20261104b';
+import { PRODUCTOS_VISIBLES, productoPorId } from './productos.js?v=20261104b';
+import { cargarFirebase, firebaseConfigurado, COLECCIONES } from './firebase.js?v=20261104b';
 
 export const esModoDemo = !firebaseConfigurado;
 

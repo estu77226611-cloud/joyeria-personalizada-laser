@@ -1,9 +1,9 @@
 /* Personalizador: vista previa, guardado en la bolsa y envío por WhatsApp. */
 
-import { TIPOS, productoParaTipo, productoPorId } from './productos.js';
-import { agregarProducto } from './store.js';
-import { abrirWhatsApp } from './whatsapp.js';
-import { aviso, qs } from './ui.js';
+import { TIPOS, productoParaTipo, productoPorId } from './productos.js?v=20261104b';
+import { agregarProducto } from './store.js?v=20261104b';
+import { abrirWhatsApp } from './whatsapp.js?v=20261104b';
+import { aviso, qs } from './ui.js?v=20261104b';
 
 function iniciar() {
   const formulario = qs('#designForm');

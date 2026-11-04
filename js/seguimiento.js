@@ -1,14 +1,14 @@
 /* Seguimiento público por código, al estilo Shalom. Sin cuenta de usuario. */
 
-import { ESTADOS, normalizarCodigo, codigoValido, urlSeguimiento } from './config.js';
+import { ESTADOS, normalizarCodigo, codigoValido, urlSeguimiento } from './config.js?v=20261104b';
 import {
   esModoDemo,
   obtenerSeguimientoPublico,
   suscribirSeguimientoPublico,
   ultimoPedido
-} from './store.js';
-import { abrirWhatsApp } from './whatsapp.js';
-import { crear, desplazarA, fechaHora, qs } from './ui.js';
+} from './store.js?v=20261104b';
+import { abrirWhatsApp } from './whatsapp.js?v=20261104b';
+import { crear, desplazarA, fechaHora, qs } from './ui.js?v=20261104b';
 
 const GALERIA_SHALOM = 'https://rastrea.shalom.pe/';
 
