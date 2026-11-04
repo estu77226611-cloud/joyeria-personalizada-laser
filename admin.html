@@ -12,7 +12,7 @@
     <title>Panel de administración | Lúmina Joyería</title>
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="assets/favicon-180.png" />
-    <link rel="stylesheet" href="css/estilos.css?v=20261103c" />
+    <link rel="stylesheet" href="css/estilos.css?v=20261104a" />
     <script>
       // Si el HTML se abre con doble clic (file://), los módulos ES no cargan.
       // El aviso correspondiente se muestra desde css/estilos.css.
@@ -62,6 +62,29 @@
       </section>
 
       <section class="section admin-shell">
+        <div class="server-block" id="serverBlock">
+          <span class="overline">PARA DESARROLLO LOCAL</span>
+          <h2>Abre el sitio con el <i>servidor local.</i></h2>
+          <p>
+            Has abierto el archivo con doble clic (<code>file://</code>). Así el navegador bloquea
+            el JavaScript y el acceso no funciona, aunque escribas bien la contraseña.
+          </p>
+          <ol>
+            <li>Haz doble clic en <b>servir-local.bat</b>.</li>
+            <li>
+              Se abrirá solo <b>http://127.0.0.1:5173/admin.html</b>. Entra ahí con
+              <b>admin@lumina.pe</b> y <b>demo1234</b>.
+            </li>
+          </ol>
+          <a class="button dark" href="http://127.0.0.1:5173/admin.html">
+            Abrir con el servidor local ↗
+          </a>
+          <p class="fineprint">
+            Si ese enlace no abre, la ventana del servidor está cerrada: vuelve a ejecutar
+            <b>servir-local.bat</b> y déjala abierta.
+          </p>
+        </div>
+
         <form id="adminLogin" class="admin-login" method="post" novalidate>
           <span class="overline">ACCESO RESTRINGIDO</span>
           <h2>Entrar al <i>panel.</i></h2>
@@ -93,9 +116,7 @@
             />
           </label>
 
-          <button class="button dark full" id="adminSubmit" type="submit">
-            Entrar al panel ↗
-          </button>
+          <button class="button dark full" id="adminSubmit" type="submit">Entrar al panel ↗</button>
           <div id="loginFeedback" class="form-message" role="status"></div>
           <p class="notice" id="demoCredentials" hidden></p>
           <p class="fineprint">

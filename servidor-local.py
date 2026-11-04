@@ -3,6 +3,10 @@
 Sirve la carpeta actual en http://127.0.0.1:5173 con Cache-Control: no-store,
 para que el navegador nunca reutilice versiones antiguas de los módulos ES.
 Así, tras editar JavaScript, basta recargar la página.
+
+Uso:
+    python servidor-local.py          -> puerto 5173
+    python servidor-local.py 5174     -> otro puerto
 """
 
 import http.server
@@ -31,13 +35,24 @@ class Servidor(socketserver.ThreadingTCPServer):
 
 
 if __name__ == "__main__":
-    with Servidor(("127.0.0.1", PUERTO), Manejador) as servidor:
+    try:
+        with Servidor(("127.0.0.1", PUERTO), Manejador) as servidor:
+            print()
+            print("  LUMINA - SERVIDOR LOCAL")
+            print("  Abre en tu navegador:  http://127.0.0.1:%d/" % PUERTO)
+            print("  Panel:                 http://127.0.0.1:%d/admin.html" % PUERTO)
+            print("  Deja esta ventana abierta. Para detenerlo: Ctrl + C")
+            print()
+            try:
+                servidor.serve_forever()
+            except KeyboardInterrupt:
+                print("\nServidor detenido.")
+    except OSError as error:
         print()
-        print("  LUMINA - SERVIDOR LOCAL")
-        print("  Abre en tu navegador:  http://127.0.0.1:5173/")
-        print("  Deja esta ventana abierta. Para detenerlo: Ctrl + C")
+        print("  No se pudo iniciar el servidor en el puerto %d." % PUERTO)
+        print("  Detalle: %s" % error)
         print()
-        try:
-            servidor.serve_forever()
-        except KeyboardInterrupt:
-            print("\nServidor detenido.")
+        print("  Suele haber otra ventana del servidor abierta.")
+        print("  Ciérrala con Ctrl + C y vuelve a ejecutar servir-local.bat.")
+        print()
+        input("  Pulsa Enter para salir...")

@@ -203,6 +203,15 @@
 .admin-login{max-width:480px;margin:0 auto;background:#fff;border:1px solid #e5d9ca;border-radius:10px;padding:36px;box-shadow:var(--shadow)}
 .admin-login h2{font:normal 32px/1.15 Georgia,serif;margin:10px 0}
 .admin-login .fineprint{line-height:1.7}
+/* Si admin.html se abre con doble clic (file://), los módulos ES no cargan.
+   En vez de dejar un login que no responde, se muestra esta guía. */
+.server-block{display:none}
+.sin-servidor .server-block{display:block;max-width:560px;margin:0 auto;background:#fff;border:1px solid #e5d9ca;border-radius:10px;padding:36px;box-shadow:var(--shadow)}
+.sin-servidor .server-block h2{font:normal 32px/1.15 Georgia,serif;margin:10px 0}
+.sin-servidor .server-block p,.sin-servidor .server-block li{line-height:1.7}
+.sin-servidor .server-block ol{padding-left:20px;margin:16px 0}
+.sin-servidor .server-block .button{margin:8px 0 14px}
+.sin-servidor #adminLogin,.sin-servidor #adminPanel{display:none!important}
 .admin-panel{background:#fff;border:1px solid #e5d9ca;border-radius:10px;padding:30px;box-shadow:var(--shadow)}
 .admin-topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:18px}
 .admin-topbar h2{font:normal 30px Georgia,serif;margin:6px 0 0;overflow-wrap:anywhere}

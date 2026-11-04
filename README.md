@@ -28,11 +28,15 @@ python -m http.server 5173
 
 Abre <http://localhost:5173>.
 
-En Windows también puedes hacer doble clic en `servir-local.bat`: inicia el
-servidor (`servidor-local.py`) y deja la ventana abierta. Ese servidor envía
+En Windows, la forma recomendada es hacer doble clic en `servir-local.bat`: cierra
+cualquier servidor anterior, arranca `servidor-local.py` y abre solo el panel en
+<http://127.0.0.1:5173/admin.html>. Deja esa ventana abierta. El servidor envía
 `Cache-Control: no-store`, así que una recarga siempre trae el JavaScript
-actualizado. Si la ventana se cierra, el sitio deja de cargar y los formularios
-no responden.
+actualizado.
+
+**No abras los HTML con doble clic** (`file:///...`): el navegador bloquea los
+módulos ES y el login no responde. Si lo haces, la página muestra una guía con
+el enlace correcto.
 
 **Opción C — Node**
 
