@@ -267,12 +267,24 @@ export async function agregarComentario({ nombre, texto }) {
 }
 
 export async function borrarComentario(id) {
-  if (!esModoDemo) {
-    throw new Error('Solo el administrador puede borrar comentarios públicos.');
+  if (esModoDemo) {
+    const comentarios = leerComentariosLocal().filter((comentario) => comentario.id !== id);
+    guardarJson(CLAVES.comentarios, comentarios);
+    emitir('lumina:comentarios', {});
+    return;
   }
-  const comentarios = leerComentariosLocal().filter((comentario) => comentario.id !== id);
-  guardarJson(CLAVES.comentarios, comentarios);
-  emitir('lumina:comentarios', {});
+
+  // Las reglas de Firestore solo permiten borrar a un administrador autenticado.
+  const firebase = await cargarFirebase();
+  const { db, fs } = firebase;
+  try {
+    await fs.deleteDoc(fs.doc(db, COLECCIONES.comentarios, String(id)));
+  } catch (error) {
+    if (error && error.code === 'permission-denied') {
+      throw new Error('Solo el administrador puede borrar comentarios públicos.');
+    }
+    throw new Error('No se pudo borrar el comentario. Inténtalo otra vez.');
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -315,6 +327,34 @@ function normalizarPedido(datos, codigo) {
     cliente: base.cliente || {},
     notas: String(base.notas || ''),
     notasAdmin: String(base.notasAdmin || '')
+  };
+}
+
+// Documento público mínimo: jamás copiar nombres, teléfonos, direcciones,
+// importes, grabados, notas libres o números de guía aquí.
+const ETIQUETAS_SEGUIMIENTO = {
+  registrado: 'Pedido recibido',
+  preparando: 'Estamos preparando tu joya',
+  listo: 'Tu pedido está listo',
+  enviado: 'El pedido fue enviado',
+  en_transito: 'El pedido está en tránsito',
+  entregado: 'Pedido entregado',
+  cancelado: 'Pedido cancelado'
+};
+
+function resumenPublico(pedido) {
+  const eventos = Array.isArray(pedido.historial) ? pedido.historial : [];
+  return {
+    codigo: pedido.codigo,
+    creado: pedido.creado,
+    actualizado: pedido.actualizado,
+    estado: pedido.estado,
+    historial: eventos.slice(0, 100).map((evento) => ({
+      estado: evento.estado,
+      fecha: Number(evento.fecha) || pedido.creado,
+      // No copiar evento.nota: el administrador podría escribir datos personales.
+      nota: ETIQUETAS_SEGUIMIENTO[evento.estado] || 'Actualización del pedido'
+    }))
   };
 }
 
@@ -393,24 +433,19 @@ export async function crearPedido({ cliente, entrega, notas = '' }) {
   }
 
   const firebase = await cargarFirebase();
+  if (!firebase) throw new Error('No se pudo conectar con Firebase.');
   const { db, fs } = firebase;
-  let codigoFinal = pedido.codigo;
-  for (let intento = 0; intento < 5; intento += 1) {
-    const referencia = fs.doc(db, COLECCIONES.pedidos, codigoFinal);
-    const existente = await fs.getDoc(referencia);
-    if (!existente.exists()) {
-      pedido.codigo = codigoFinal;
-      await fs.setDoc(referencia, {
-        ...pedido,
-        creado: fs.serverTimestamp(),
-        actualizado: fs.serverTimestamp()
-      });
-      guardarJson(CLAVES.ultimoPedido, pedido.codigo);
-      return pedido;
-    }
-    codigoFinal = generarCodigo();
-  }
-  throw new Error('No se pudo generar un código único. Inténtalo otra vez.');
+
+  // Crear el pedido sin consultar antes documentos privados.
+  // Un codigo ya existente no puede sobrescribirse con las reglas seguras.
+  const referencia = fs.doc(db, COLECCIONES.pedidos, pedido.codigo);
+  const seguimiento = fs.doc(db, 'seguimientos', pedido.codigo);
+  const lote = fs.writeBatch(db);
+  lote.set(referencia, pedido);
+  lote.set(seguimiento, resumenPublico(pedido));
+  await lote.commit();
+  guardarJson(CLAVES.ultimoPedido, pedido.codigo);
+  return pedido;
 }
 
 export async function obtenerPedido(codigo) {
@@ -472,6 +507,56 @@ export function suscribirPedido(codigo, alCambiar, alFallar) {
       if (alFallar) alFallar(error);
     });
 
+  return () => {
+    cancelado = true;
+    detener();
+  };
+}
+
+// APIs exclusivamente para la página pública de seguimiento.
+export async function obtenerSeguimientoPublico(codigo) {
+  const normalizado = normalizarCodigo(codigo);
+  if (!codigoValido(normalizado)) return null;
+  if (esModoDemo) {
+    const pedido = leerPedidosDemo()[normalizado];
+    return pedido ? resumenPublico(normalizarPedido(pedido, normalizado)) : null;
+  }
+  const { db, fs } = await cargarFirebase();
+  const documento = await fs.getDoc(fs.doc(db, 'seguimientos', normalizado));
+  return documento.exists() ? documento.data() : null;
+}
+
+export function suscribirSeguimientoPublico(codigo, alCambiar, alFallar) {
+  const normalizado = normalizarCodigo(codigo);
+  if (!codigoValido(normalizado)) {
+    alCambiar(null);
+    return () => {};
+  }
+  if (esModoDemo) {
+    const informar = () => {
+      const pedido = leerPedidosDemo()[normalizado];
+      alCambiar(pedido ? resumenPublico(normalizarPedido(pedido, normalizado)) : null);
+    };
+    informar();
+    window.addEventListener('lumina:pedidos', informar);
+    window.addEventListener('storage', informar);
+    return () => {
+      window.removeEventListener('lumina:pedidos', informar);
+      window.removeEventListener('storage', informar);
+    };
+  }
+  let detener = () => {};
+  let cancelado = false;
+  cargarFirebase()
+    .then(({ db, fs }) => {
+      if (cancelado) return;
+      detener = fs.onSnapshot(
+        fs.doc(db, 'seguimientos', normalizado),
+        (doc) => alCambiar(doc.exists() ? doc.data() : null),
+        (error) => alFallar?.(error)
+      );
+    })
+    .catch((error) => alFallar?.(error));
   return () => {
     cancelado = true;
     detener();
@@ -587,7 +672,16 @@ export async function actualizarPedido(codigo, { estado, guia, notasAdmin } = {}
   if (typeof guia === 'string') cambios['entrega.guia'] = guia.trim().slice(0, 60);
   if (typeof notasAdmin === 'string') cambios.notasAdmin = notasAdmin.trim().slice(0, 400);
 
-  await fs.updateDoc(referencia, cambios);
+  const nuevoPedido = {
+    ...pedido,
+    ...(cambios.estado ? { estado: cambios.estado, historial: cambios.historial } : {}),
+    actualizado: ahora
+  };
+  const lote = fs.writeBatch(db);
+  lote.update(referencia, cambios);
+  // También crea el seguimiento de pedidos anteriores a esta actualización.
+  lote.set(fs.doc(db, 'seguimientos', normalizado), resumenPublico(nuevoPedido));
+  await lote.commit();
   return normalizarPedido(
     {
       ...pedido,
@@ -653,6 +747,62 @@ function leerSesionDemo() {
   return leerJson(CLAVES.sesionDemo, null);
 }
 
+// Comprueba que el UID autenticado tenga su documento en admins/{uid}.
+// Sin ese documento las reglas no permiten listar ni modificar pedidos.
+async function verificarAdministrador(usuario, { cerrarSiNoAutorizado = false } = {}) {
+  if (!usuario) return null;
+  const firebase = await cargarFirebase();
+  if (!firebase) return null;
+  const { db, fs, auth, au } = firebase;
+
+  let documento;
+  try {
+    documento = await fs.getDoc(fs.doc(db, COLECCIONES.admins, usuario.uid));
+  } catch (error) {
+    if (error && error.code === 'permission-denied') {
+      if (cerrarSiNoAutorizado) await au.signOut(auth).catch(() => {});
+      return null;
+    }
+    throw error;
+  }
+
+  if (!documento.exists()) {
+    if (cerrarSiNoAutorizado) await au.signOut(auth).catch(() => {});
+    return null;
+  }
+
+  return { email: usuario.email, uid: usuario.uid, demo: false };
+}
+
+function mensajeErrorAuth(error) {
+  const codigo = error && error.code ? error.code : '';
+  switch (codigo) {
+    case 'auth/invalid-credential':
+    case 'auth/wrong-password':
+    case 'auth/user-not-found':
+      return 'Correo o contraseña incorrectos.';
+    case 'auth/invalid-email':
+      return 'El correo no tiene un formato válido.';
+    case 'auth/missing-password':
+      return 'Escribe tu contraseña.';
+    case 'auth/user-disabled':
+      return 'Esta cuenta está deshabilitada en Firebase Authentication.';
+    case 'auth/too-many-requests':
+      return 'Demasiados intentos. Espera unos minutos e inténtalo otra vez.';
+    case 'auth/network-request-failed':
+      return 'No hay conexión con Firebase. Revisa tu internet.';
+    case 'auth/unauthorized-domain':
+      return 'Este dominio no está autorizado en Firebase Authentication. Agrega localhost (o tu dominio) en Authentication → Settings → Authorized domains.';
+    case 'auth/operation-not-allowed':
+      return 'El acceso con correo y contraseña está desactivado. Actívalo en Firebase Authentication → Sign-in method.';
+    case 'auth/invalid-api-key':
+    case 'auth/api-key-not-valid':
+      return 'La API key de js/firebase-config.js no es válida para este proyecto de Firebase.';
+    default:
+      return `No se pudo iniciar sesión${codigo ? ` (${codigo})` : ''}. Revisa la configuración de Firebase.`;
+  }
+}
+
 export function observarSesion(alCambiar) {
   if (esModoDemo) {
     const emitir = () => alCambiar(leerSesionDemo());
@@ -673,7 +823,18 @@ export function observarSesion(alCambiar) {
       if (!firebase || cancelado) return;
       const { auth, au } = firebase;
       detener = au.onAuthStateChanged(auth, (usuario) => {
-        alCambiar(usuario ? { email: usuario.email, uid: usuario.uid, demo: false } : null);
+        if (!usuario) {
+          alCambiar(null);
+          return;
+        }
+        // No basta con tener sesión: también hay que estar en admins/{uid}.
+        verificarAdministrador(usuario, { cerrarSiNoAutorizado: true })
+          .then((sesion) => {
+            if (!cancelado) alCambiar(sesion);
+          })
+          .catch(() => {
+            if (!cancelado) alCambiar(null);
+          });
       });
     })
     .catch(() => alCambiar(null));
@@ -701,26 +862,32 @@ export async function entrarAdmin(email, password) {
 
   const firebase = await cargarFirebase();
   const { auth, au } = firebase;
+
+  let credencial;
   try {
-    const credencial = await au.signInWithEmailAndPassword(auth, correo, clave);
-    return { email: credencial.user.email, uid: credencial.user.uid, demo: false };
+    credencial = await au.signInWithEmailAndPassword(auth, correo, clave);
   } catch (error) {
-    const codigo = error && error.code ? error.code : '';
-    if (
-      codigo === 'auth/invalid-credential' ||
-      codigo === 'auth/wrong-password' ||
-      codigo === 'auth/user-not-found'
-    ) {
-      throw new Error('Correo o contraseña incorrectos.');
-    }
-    if (codigo === 'auth/too-many-requests') {
-      throw new Error('Demasiados intentos. Espera unos minutos e inténtalo otra vez.');
-    }
-    if (codigo === 'auth/network-request-failed') {
-      throw new Error('No hay conexión con Firebase. Revisa tu internet.');
-    }
-    throw new Error('No se pudo iniciar sesión. Revisa la configuración de Firebase.');
+    throw new Error(mensajeErrorAuth(error));
   }
+
+  let sesion;
+  try {
+    sesion = await verificarAdministrador(credencial.user, { cerrarSiNoAutorizado: true });
+  } catch {
+    await au.signOut(auth).catch(() => {});
+    throw new Error(
+      'No se pudo comprobar tu permiso de administrador. Revisa tu conexión y las reglas de Firestore.'
+    );
+  }
+
+  if (!sesion) {
+    throw new Error(
+      'La cuenta existe, pero no está autorizada como administradora. Crea el documento admins/{UID} en Firestore con el UID de este usuario.'
+    );
+  }
+
+  emitir('lumina:sesion', sesion);
+  return sesion;
 }
 
 export async function salirAdmin() {

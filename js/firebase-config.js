@@ -1,15 +1,10 @@
-/* Configuración pública del proyecto Firebase.
-   Instrucciones completas en FIREBASE_SETUP.md.
-
-   Mientras estos campos estén vacíos, el sitio usa el MODO DEMOSTRACIÓN:
-   pedidos, bolsa y comentarios quedan en el localStorage del navegador.
-
-   La apiKey de Firebase es pública por diseño; la seguridad real está en
-   firestore.rules y en Firebase Authentication. NO escribas contraseñas aquí. */
+/* Configuración pública de Firebase para LÚMINA – Joyería Láser.
+   La seguridad de pedidos y comentarios depende de las reglas de Firestore
+   y de Firebase Authentication. No coloques contraseñas en este archivo. */
 
 export const firebaseConfig = {
-  apiKey: '',
-  authDomain: '',
-  projectId: '',
-  appId: ''
+  apiKey: 'AIzaSyCHWClah3EUpRUKdZHxyn2oEwbXIqH83g0',
+  authDomain: 'lumina-joyeria-laser.firebaseapp.com',
+  projectId: 'lumina-joyeria-laser',
+  appId: '1:252479195261:web:034030d14c55dd8c080914'
 };

@@ -1,14 +1,18 @@
 rules_version = '2';
 
 /* Lúmina Joyería — reglas de Firestore.
-   - Cualquiera puede consultar un pedido concreto si conoce su código.
-   - Solo el administrador puede listar todos los pedidos y cambiarlos.
-   - Los comentarios son públicos para leer y crear; solo el administrador borra.
-   - Colección admins: documentos { uid } creados a mano desde la consola. */
+   - pedidos/{codigo}: solo el administrador puede leer/listar datos personales.
+   - seguimientos/{codigo}: lectura pública puntual con el código exacto; nunca listar.
+   - comentarios/{id}: lectura pública; creación validada; borrado solo administrador.
+   - admins/{uid}: el propio usuario autenticado puede comprobar su documento.
+     Los documentos se crean a mano desde la consola de Firebase.
+
+   Importante: al crear un pedido se escribe también su seguimiento público
+   en el mismo writeBatch. Así el cliente recibe un código y puede consultar
+   el estado sin exponer nombres, teléfonos, direcciones ni importes. */
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
     function signedIn() {
       return request.auth != null;
     }
@@ -18,105 +22,143 @@ service cloud.firestore {
         && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
-    function isTex(value, maximo) {
-      return value is string && value.size() <= maximo;
+    function exact(d, names) {
+      return d.keys().hasOnly(names) && d.keys().hasAll(names);
     }
 
-    function isNumeroPositivo(value) {
-      return value is number && value >= 0;
+    function textMax(v, n) {
+      return v is string && v.size() <= n;
     }
 
-    function clavesExactas(datos, permitidas) {
-      return datos.keys().hasOnly(permitidas) && datos.keys().hasAll(permitidas);
+    function codeOK(c) {
+      return c.matches('^LUM-[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{8}$');
     }
 
-    function clavesDentro(datos, permitidas, obligatorias) {
-      return datos.keys().hasOnly(permitidas) && datos.keys().hasAll(obligatorias);
+    /* Firestore Rules no permite recorrer listas: se valida la forma del
+       primer artículo y los límites generales. La interfaz pinta todo con
+       textContent, sin interpretar HTML. */
+    function validItems(v) {
+      return v is list
+        && v.size() > 0
+        && v.size() <= 40
+        && v[0] is map
+        && exact(v[0], ['id', 'nombre', 'precio', 'cantidad', 'grabado', 'acabado', 'nota'])
+        && v[0].id is int
+        && v[0].id > 0
+        && textMax(v[0].nombre, 120)
+        && v[0].precio is number
+        && v[0].precio >= 0
+        && v[0].cantidad is int
+        && v[0].cantidad >= 1
+        && v[0].cantidad <= 20
+        && textMax(v[0].grabado, 60)
+        && v[0].acabado in ['dorado', 'plateado']
+        && textMax(v[0].nota, 300);
     }
 
-    /* Firestore Rules no permite recorrer listas: validamos la forma del
-       primer artículo y los límites generales de la lista. El resto de
-       artículos se pinta con textContent en la interfaz, sin HTML. */
-    function itemsValidos(items) {
-      return items is list
-        && items.size() > 0
-        && items.size() <= 40
-        && items[0] is map
-        && clavesExactas(items[0], ['id', 'nombre', 'precio', 'cantidad', 'grabado', 'acabado', 'nota'])
-        && items[0].id is int
-        && items[0].id > 0
-        && isTex(items[0].nombre, 120)
-        && isNumeroPositivo(items[0].precio)
-        && items[0].cantidad is int
-        && items[0].cantidad >= 1
-        && items[0].cantidad <= 20
-        && isTex(items[0].grabado, 60)
-        && items[0].acabado in ['dorado', 'plateado']
-        && isTex(items[0].nota, 300);
+    function validDelivery(v) {
+      return v is map
+        && exact(v, ['tipo', 'distrito', 'direccion', 'referencia', 'agencia', 'guia'])
+        && v.tipo in ['recojo', 'delivery', 'shalom']
+        && textMax(v.distrito, 80)
+        && textMax(v.direccion, 200)
+        && textMax(v.referencia, 200)
+        && textMax(v.agencia, 120)
+        && v.guia == '';
     }
 
-    function historialInicialValido(historial) {
-      return historial is list
-        && historial.size() == 1
-        && historial[0] is map
-        && clavesExactas(historial[0], ['estado', 'fecha', 'nota'])
-        && historial[0].estado == 'registrado'
-        && historial[0].fecha is number
-        && isTex(historial[0].nota, 400);
+    function validOrder(c) {
+      let d = request.resource.data;
+      return codeOK(c)
+        && exact(d, [
+          'codigo',
+          'creado',
+          'actualizado',
+          'estado',
+          'historial',
+          'items',
+          'total',
+          'entrega',
+          'cliente',
+          'notas',
+          'notasAdmin'
+        ])
+        && d.codigo == c
+        && d.creado is number
+        && d.actualizado == d.creado
+        && d.estado == 'registrado'
+        && d.historial is list
+        && d.historial.size() == 1
+        && d.historial[0] is map
+        && exact(d.historial[0], ['estado', 'fecha', 'nota'])
+        && d.historial[0].estado == 'registrado'
+        && d.historial[0].fecha == d.creado
+        && textMax(d.historial[0].nota, 400)
+        && validItems(d.items)
+        && d.total is number
+        && d.total >= 0
+        && validDelivery(d.entrega)
+        && d.cliente is map
+        && exact(d.cliente, ['nombre', 'telefono'])
+        && textMax(d.cliente.nombre, 80)
+        && d.cliente.nombre.size() >= 3
+        && textMax(d.cliente.telefono, 20)
+        && d.cliente.telefono.size() >= 6
+        && textMax(d.notas, 400)
+        && d.notasAdmin == '';
     }
 
-    function entregaValida(entrega) {
-      return entrega is map
-        && clavesExactas(entrega, ['tipo', 'distrito', 'direccion', 'referencia', 'agencia', 'guia'])
-        && entrega.tipo in ['recojo', 'delivery', 'shalom']
-        && isTex(entrega.distrito, 80)
-        && isTex(entrega.direccion, 200)
-        && isTex(entrega.referencia, 200)
-        && isTex(entrega.agencia, 120)
-        && entrega.guia == '';
-    }
-
-    function clienteValido(cliente) {
-      return cliente is map
-        && clavesExactas(cliente, ['nombre', 'telefono'])
-        && isTex(cliente.nombre, 80)
-        && cliente.nombre.size() >= 3
-        && isTex(cliente.telefono, 20)
-        && cliente.telefono.size() >= 6;
+    /* Documento público mínimo. Debe crearse junto al pedido privado y solo
+       puede contener estado, fechas e historial sin notas libres. */
+    function publicInitial(c) {
+      let d = request.resource.data;
+      let privateOrder = getAfter(/databases/$(database)/documents/pedidos/$(c)).data;
+      return codeOK(c)
+        && exact(d, ['codigo', 'creado', 'actualizado', 'estado', 'historial'])
+        && d.codigo == c
+        && d.estado == 'registrado'
+        && d.creado is number
+        && d.actualizado == d.creado
+        && d.historial is list
+        && d.historial.size() == 1
+        && d.historial[0] is map
+        && exact(d.historial[0], ['estado', 'fecha', 'nota'])
+        && d.historial[0].estado == 'registrado'
+        && d.historial[0].fecha == d.creado
+        && d.historial[0].nota == 'Pedido recibido'
+        && privateOrder.codigo == c
+        && privateOrder.creado == d.creado
+        && privateOrder.estado == d.estado;
     }
 
     match /pedidos/{codigo} {
-      // Consulta puntual con el código: es la "llave" del seguimiento.
-      allow get: if true;
+      // No exponer nombres, teléfonos ni domicilios mediante un código.
+      allow get, list: if isAdmin();
 
-      // Nadie puede enumerar pedidos salvo el administrador.
-      allow list: if isAdmin();
-
-      allow create: if codigo.matches('^LUM-[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{8}$')
-        && request.resource.data.codigo == codigo
-        && clavesExactas(request.resource.data, [
-          'codigo', 'creado', 'actualizado', 'estado', 'historial',
-          'items', 'total', 'entrega', 'cliente', 'notas', 'notasAdmin'
-        ])
-        && request.resource.data.estado == 'registrado'
-        && historialInicialValido(request.resource.data.historial)
-        && itemsValidos(request.resource.data.items)
-        && isNumeroPositivo(request.resource.data.total)
-        && entregaValida(request.resource.data.entrega)
-        && clienteValido(request.resource.data.cliente)
-        && isTex(request.resource.data.notas, 400)
-        && request.resource.data.notasAdmin == '';
+      // La creación debe incluir su documento público en la misma escritura atómica.
+      allow create: if validOrder(codigo)
+        && getAfter(/databases/$(database)/documents/seguimientos/$(codigo)).data.codigo == codigo
+        && getAfter(/databases/$(database)/documents/seguimientos/$(codigo)).data.creado
+          == request.resource.data.creado;
 
       allow update, delete: if isAdmin();
     }
 
-    match /comentarios/{comentario} {
+    match /seguimientos/{codigo} {
+      // Lectura individual por código, nunca enumeración pública.
+      allow get: if codeOK(codigo);
+      allow list: if isAdmin();
+      allow create: if isAdmin() || publicInitial(codigo);
+      allow update, delete: if isAdmin();
+    }
+
+    match /comentarios/{id} {
       allow read: if true;
 
-      allow create: if clavesExactas(request.resource.data, ['nombre', 'texto', 'creado'])
-        && isTex(request.resource.data.nombre, 40)
+      allow create: if exact(request.resource.data, ['nombre', 'texto', 'creado'])
+        && textMax(request.resource.data.nombre, 40)
         && request.resource.data.nombre.size() >= 2
-        && isTex(request.resource.data.texto, 280)
+        && textMax(request.resource.data.texto, 280)
         && request.resource.data.texto.size() >= 2
         && request.resource.data.creado is number;
 
@@ -124,14 +166,12 @@ service cloud.firestore {
     }
 
     match /admins/{uid} {
-      // Solo se consulta el propio documento durante el inicio de sesión.
       allow get: if signedIn() && request.auth.uid == uid;
-      // Los administradores se crean a mano desde la consola de Firebase.
-      allow create, update, delete: if false;
+      allow list, create, update, delete: if false;
     }
 
     // Bloquea cualquier colección no declarada.
-    match /{documento=**} {
+    match /{document=**} {
       allow read, write: if false;
     }
   }

@@ -18,7 +18,7 @@ import {
   salirAdmin,
   suscribirPedidos
 } from './store.js';
-import { aviso, crear, fechaHora, qs } from './ui.js';
+import { aviso, crear, desplazarA, fechaHora, qs } from './ui.js';
 
 function iniciar() {
   const formulario = qs('#adminLogin');
@@ -64,6 +64,9 @@ function iniciar() {
     if (!retroalimentacion) return;
     retroalimentacion.textContent = texto;
     retroalimentacion.classList.toggle('form-message--error', error);
+    // El aviso queda justo debajo del botón. Si el formulario está al final de
+    // la pantalla, hay que acercarlo para que la respuesta sea visible.
+    if (texto) desplazarA(retroalimentacion, 'center');
   }
 
   function telefonoWhatsApp(telefono) {
@@ -286,7 +289,12 @@ function iniciar() {
 
   function mostrarPanel(sesion) {
     if (formulario) formulario.hidden = true;
-    if (panel) panel.hidden = false;
+    if (panel) {
+      panel.hidden = false;
+      // Al ocultar el formulario la página se acorta; sin este ajuste el panel
+      // puede quedar por encima del área visible y parecer que no pasó nada.
+      desplazarA(panel, 'start');
+    }
     if (usuario) usuario.textContent = sesion?.email || 'Administrador';
     conectarPedidos();
   }
@@ -305,8 +313,10 @@ function iniciar() {
       botonEntrar.textContent = 'Verificando…';
     }
     try {
-      await entrarAdmin(correo?.value || '', clave?.value || '');
+      const sesion = await entrarAdmin(correo?.value || '', clave?.value || '');
       if (clave) clave.value = '';
+      // No esperamos solo a onAuthStateChanged: abrimos el panel con la sesión devuelta.
+      if (sesion) mostrarPanel(sesion);
     } catch (error) {
       mensaje(error?.message || 'No se pudo iniciar sesión.');
     } finally {

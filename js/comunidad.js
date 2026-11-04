@@ -1,6 +1,12 @@
 /* Comunidad: comentarios locales o públicos (Firestore) y carrusel accesible. */
 
-import { agregarComentario, borrarComentario, esModoDemo, suscribirComentarios } from './store.js';
+import {
+  agregarComentario,
+  borrarComentario,
+  esModoDemo,
+  observarSesion,
+  suscribirComentarios
+} from './store.js';
 import { aviso, copiarTexto, crear, fechaHora, pedirConfirmacion, qs } from './ui.js';
 
 function iniciar() {
@@ -18,13 +24,37 @@ function iniciar() {
   const pista = lista;
 
   let comentarios = [];
+  let esAdmin = esModoDemo;
   let modoGestion = false;
   let indice = 0;
   let detenerSuscripcion = () => {};
+  let detenerSesion = () => {};
 
-  if (!esModoDemo) {
-    if (gestion) gestion.hidden = true;
-    if (avisoGestion) avisoGestion.hidden = true;
+  function refrescarGestion() {
+    if (gestion) {
+      gestion.hidden = !esAdmin;
+      gestion.setAttribute('aria-pressed', String(modoGestion));
+      gestion.textContent = modoGestion
+        ? 'Terminar gestión de comentarios'
+        : esModoDemo
+          ? 'Gestionar comentarios de este navegador'
+          : 'Gestionar comentarios publicados';
+    }
+    if (avisoGestion) {
+      avisoGestion.hidden = !(esAdmin && modoGestion);
+      if (esAdmin && modoGestion) {
+        avisoGestion.textContent = esModoDemo
+          ? 'Podrás borrar los comentarios guardados en este navegador. Para moderar comentarios públicos desde otros dispositivos se necesita Firebase Authentication y reglas de Firestore.'
+          : 'Los comentarios que borres desaparecerán para todos los visitantes del sitio.';
+      }
+    }
+    pintar();
+  }
+
+  function aplicarPermisos(sesion) {
+    esAdmin = esModoDemo || Boolean(sesion);
+    if (!esAdmin && modoGestion) modoGestion = false;
+    refrescarGestion();
   }
 
   function tarjetas() {
@@ -93,7 +123,7 @@ function iniciar() {
       );
       articulo.append(cabecera, crear('p', { text: comentario.texto }));
 
-      if (modoGestion && esModoDemo) {
+      if (modoGestion && esAdmin) {
         const borrar = crear('button', {
           type: 'button',
           class: 'comment-delete',
@@ -103,12 +133,23 @@ function iniciar() {
         borrar.addEventListener('click', async () => {
           const confirmado = await pedirConfirmacion({
             titulo: 'Eliminar comentario',
-            mensaje: 'Este comentario se borrará de este navegador. ¿Continuar?',
+            mensaje: esModoDemo
+              ? 'Este comentario se borrará de este navegador. ¿Continuar?'
+              : 'Este comentario se borrará para todos los visitantes. ¿Continuar?',
             confirmar: 'Sí, eliminar'
           });
           if (!confirmado) return;
-          await borrarComentario(comentario.id);
-          aviso('Comentario eliminado de este navegador.', 'info');
+          try {
+            await borrarComentario(comentario.id);
+            aviso(
+              esModoDemo
+                ? 'Comentario eliminado de este navegador.'
+                : 'Comentario eliminado para todos los visitantes.',
+              'info'
+            );
+          } catch (error) {
+            aviso(error?.message || 'No se pudo eliminar el comentario.', 'error');
+          }
         });
         articulo.append(borrar);
       }
@@ -125,7 +166,7 @@ function iniciar() {
     detenerSuscripcion = suscribirComentarios(
       (nuevos, contexto) => {
         comentarios = nuevos;
-        if (!contexto.demo && avisoGestion) avisoGestion.hidden = true;
+        if (!contexto.demo && !esAdmin && avisoGestion) avisoGestion.hidden = true;
         pintar();
       },
       () => {
@@ -140,12 +181,7 @@ function iniciar() {
 
   gestion?.addEventListener('click', () => {
     modoGestion = !modoGestion;
-    gestion.setAttribute('aria-pressed', String(modoGestion));
-    gestion.textContent = modoGestion
-      ? 'Terminar gestión de comentarios'
-      : 'Gestionar comentarios de este navegador';
-    if (avisoGestion) avisoGestion.hidden = !modoGestion;
-    pintar();
+    refrescarGestion();
   });
 
   formulario.addEventListener('submit', async (evento) => {
@@ -216,7 +252,10 @@ function iniciar() {
   });
 
   window.addEventListener('resize', actualizarControles);
-  window.addEventListener('beforeunload', () => detenerSuscripcion());
+  window.addEventListener('beforeunload', () => {
+    detenerSuscripcion();
+    detenerSesion();
+  });
 
   const compartir = qs('#shareButton');
   compartir?.addEventListener('click', async () => {
@@ -233,6 +272,8 @@ function iniciar() {
       /* El usuario canceló la opción de compartir. */
     }
   });
+
+  detenerSesion = observarSesion((sesion) => aplicarPermisos(sesion));
 
   iniciarSuscripcion();
   pintar();

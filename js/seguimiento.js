@@ -1,16 +1,14 @@
 /* Seguimiento público por código, al estilo Shalom. Sin cuenta de usuario. */
 
+import { ESTADOS, normalizarCodigo, codigoValido, urlSeguimiento } from './config.js';
 import {
-  ESTADOS,
-  dinero,
-  entregaPorId,
-  normalizarCodigo,
-  codigoValido,
-  urlSeguimiento
-} from './config.js';
-import { esModoDemo, obtenerPedido, suscribirPedido, ultimoPedido } from './store.js';
+  esModoDemo,
+  obtenerSeguimientoPublico,
+  suscribirSeguimientoPublico,
+  ultimoPedido
+} from './store.js';
 import { abrirWhatsApp } from './whatsapp.js';
-import { crear, fechaHora, qs } from './ui.js';
+import { crear, desplazarA, fechaHora, qs } from './ui.js';
 
 const GALERIA_SHALOM = 'https://rastrea.shalom.pe/';
 
@@ -75,7 +73,6 @@ function iniciar() {
     }
 
     const actual = estadoActual(pedido);
-    const entrega = entregaPorId(pedido.entrega?.tipo);
     const cancelado = pedido.estado === 'cancelado';
 
     const cabecera = crear(
@@ -91,39 +88,8 @@ function iniciar() {
       crear('span', { class: `status-pill status-pill--${actual.id}`, text: actual.label })
     );
 
-    const resumen = crear(
-      'dl',
-      { class: 'tracking-meta' },
-      crear(
-        'div',
-        {},
-        crear('dt', { text: 'Cliente' }),
-        crear('dd', { text: pedido.cliente?.nombre || '—' })
-      ),
-      crear('div', {}, crear('dt', { text: 'Entrega' }), crear('dd', { text: entrega.label })),
-      crear(
-        'div',
-        {},
-        crear('dt', { text: 'Total referencial' }),
-        crear('dd', { text: dinero(pedido.total) })
-      ),
-      pedido.entrega?.distrito
-        ? crear(
-            'div',
-            {},
-            crear('dt', { text: entrega.agencia ? 'Destino' : 'Distrito' }),
-            crear('dd', { text: pedido.entrega.distrito })
-          )
-        : null,
-      pedido.entrega?.agencia
-        ? crear(
-            'div',
-            {},
-            crear('dt', { text: 'Agencia' }),
-            crear('dd', { text: pedido.entrega.agencia })
-          )
-        : null
-    );
+    // El seguimiento público muestra únicamente estado y fechas.
+    // Nunca mostrar cliente, dirección, distrito, agencia, importe o productos.
 
     const linea = crear('ol', { class: 'timeline', attrs: { 'aria-label': 'Estados del pedido' } });
 
@@ -167,46 +133,7 @@ function iniciar() {
       });
     }
 
-    const items = crear(
-      'ul',
-      { class: 'tracking-items' },
-      ...(pedido.items || []).map((item) =>
-        crear(
-          'li',
-          {},
-          crear('span', { text: `${item.nombre} x${item.cantidad}` }),
-          crear('strong', { text: dinero(item.precio * item.cantidad) }),
-          item.grabado
-            ? crear('small', { text: `Grabado: ${item.grabado} · ${item.acabado}` })
-            : null
-        )
-      )
-    );
-
     const acciones = crear('div', { class: 'tracking-actions' });
-
-    if (pedido.entrega?.tipo === 'shalom') {
-      const guia = pedido.entrega.guia;
-      acciones.append(
-        crear(
-          'p',
-          { class: 'tracking-guide' },
-          crear('b', { text: 'Guía Shalom: ' }),
-          crear('span', { text: guia || 'Pendiente de asignar' })
-        )
-      );
-      if (guia) {
-        acciones.append(
-          crear('a', {
-            class: 'button light',
-            href: GALERIA_SHALOM,
-            target: '_blank',
-            rel: 'noopener noreferrer',
-            text: 'Rastrear en Shalom ↗'
-          })
-        );
-      }
-    }
 
     const botonWhatsApp = crear('button', {
       type: 'button',
@@ -222,16 +149,15 @@ function iniciar() {
 
     resultado.append(
       cabecera,
-      resumen,
       crear('h3', { class: 'tracking-subtitle', text: 'Estado de tu pedido' }),
       linea,
-      crear('h3', { class: 'tracking-subtitle', text: 'Detalle' }),
-      items,
-      pedido.notas
-        ? crear('p', { class: 'fineprint', text: `Indicaciones: ${pedido.notas}` })
-        : null,
       acciones
     );
+  }
+
+  /* Lleva el resultado al inicio de la vista cuando llega la primera respuesta. */
+  function enfocarResultado() {
+    desplazarA(resultado, 'start');
   }
 
   async function buscar(codigo, { actualizarUrl = true } = {}) {
@@ -240,7 +166,8 @@ function iniciar() {
     if (!codigoValido(normalizado)) {
       mostrarMensaje('El código debe tener el formato LUM-ABCD2345.', true);
       resultado.replaceChildren();
-      campo.focus();
+      campo.focus({ preventScroll: true });
+      desplazarA(retroalimentacion, 'center');
       return;
     }
 
@@ -255,14 +182,25 @@ function iniciar() {
     resultado.replaceChildren(
       crear('p', { class: 'tracking-loading', text: 'Buscando tu pedido…' })
     );
+    // Respuesta inmediata junto al botón: el resultado puede quedar debajo del
+    // borde visible si el formulario está al final de la pantalla.
+    mostrarMensaje('Buscando tu pedido…', false);
+    desplazarA(retroalimentacion, 'center');
 
     /* Una lectura directa da respuesta inmediata; la suscripción mantiene
        el estado actualizado si el taller lo cambia. */
+    let enfocarAlLlegar = true;
     try {
-      const pedido = await obtenerPedido(normalizado);
+      const pedido = await obtenerSeguimientoPublico(normalizado);
       pintar(pedido);
       if (!pedido) {
         mostrarMensaje('No encontramos un pedido con ese código. Revísalo o escríbenos.', true);
+        desplazarA(retroalimentacion, 'center');
+        enfocarAlLlegar = false;
+      } else {
+        limpiarMensaje();
+        enfocarResultado();
+        enfocarAlLlegar = false;
       }
     } catch {
       mostrarMensaje(
@@ -270,12 +208,24 @@ function iniciar() {
         true
       );
       resultado.replaceChildren();
+      desplazarA(retroalimentacion, 'center');
+      // Si la suscripción recupera el pedido después, hay que mostrarlo.
+      enfocarAlLlegar = true;
     }
 
-    detener = suscribirPedido(
+    detener = suscribirSeguimientoPublico(
       normalizado,
       (pedido) => {
-        if (pedido) pintar(pedido);
+        // Si la lectura inicial falló por red, la suscripción puede recuperar
+        // el estado después; en ese caso hay que quitar el aviso de error.
+        if (pedido) {
+          pintar(pedido);
+          limpiarMensaje();
+          if (enfocarAlLlegar) {
+            enfocarAlLlegar = false;
+            enfocarResultado();
+          }
+        }
       },
       () => {
         /* Si falla la suscripción en tiempo real, la lectura inicial ya mostró el estado. */

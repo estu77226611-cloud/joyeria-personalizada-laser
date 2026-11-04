@@ -32,7 +32,12 @@
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="assets/favicon-180.png" />
-    <link rel="stylesheet" href="css/estilos.css?v=20261103b" />
+    <link rel="stylesheet" href="css/estilos.css?v=20261103c" />
+    <script>
+      // Si el HTML se abre con doble clic (file://), los módulos ES no cargan.
+      // El aviso correspondiente se muestra desde css/estilos.css.
+      if (location.protocol === 'file:') document.documentElement.classList.add('sin-servidor');
+    </script>
     <script type="module" src="js/main.js"></script>
     <script type="module" src="js/pedidos.js"></script>
   </head>

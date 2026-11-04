@@ -2,7 +2,8 @@
 
 Sitio web estático (HTML + CSS + módulos ES) para una joyería personalizada. Incluye catálogo,
 personalizador, bolsa, registro de pedidos, **seguimiento público por código tipo Shalom**,
-comunidad y un panel de administración.
+comunidad y un panel de administración. Los pedidos privados y su seguimiento público viven en
+documentos separados de Firestore.
 
 > Proyecto académico. Los precios, materiales, fotografías y datos legales son referenciales y
 > deben confirmarse antes de usarlo con clientes reales.
@@ -26,6 +27,12 @@ python -m http.server 5173
 ```
 
 Abre <http://localhost:5173>.
+
+En Windows también puedes hacer doble clic en `servir-local.bat`: inicia el
+servidor (`servidor-local.py`) y deja la ventana abierta. Ese servidor envía
+`Cache-Control: no-store`, así que una recarga siempre trae el JavaScript
+actualizado. Si la ventana se cierra, el sitio deja de cargar y los formularios
+no responden.
 
 **Opción C — Node**
 
@@ -75,10 +82,16 @@ demostración se desactiva solo.
 1. El cliente elige una pieza y la personaliza (texto, acabado, nota).
 2. La bolsa permite cambiar cantidades, quitar artículos y vaciarla.
 3. En `pedidos.html` completa nombre, WhatsApp, tipo de entrega y acepta la privacidad.
-4. Al confirmar se genera un código `LUM-XXXXXXXX` (8 caracteres de un alfabeto de 32).
+4. Al confirmar se genera un código `LUM-XXXXXXXX` (8 caracteres de un alfabeto de 32) y se
+   escriben **dos documentos en una sola operación atómica**: `pedidos/{codigo}` (privado) y
+   `seguimientos/{codigo}` (público y mínimo).
 5. El cliente guarda el código y consulta el avance en `seguimiento.html?codigo=...`.
 6. El administrador cambia el estado desde `admin.html`; el seguimiento se actualiza en vivo.
 7. El pago, el costo de envío y la fecha se coordinan por WhatsApp.
+
+El documento público de seguimiento solo contiene `codigo`, `creado`, `actualizado`, `estado` e
+`historial` con etiquetas de estado. **Nunca** incluye nombre, teléfono, dirección, importes,
+grabados ni notas internas.
 
 ### Estados
 
@@ -90,8 +103,9 @@ Además existe `cancelado`, que se muestra aparte en la línea de tiempo.
 
 - **Recojo en el taller**: sin costo de envío.
 - **Delivery en Lima**: costo coordinado por WhatsApp según el distrito.
-- **Shalom (provincias)**: el administrador registra el número de guía y el seguimiento enlaza a
-  <https://rastrea.shalom.pe/>. Shalom no ofrece API pública, así que no hay actualización
+- **Shalom (provincias)**: el administrador registra el número de guía en el panel, dentro del
+  documento privado del pedido. El seguimiento público solo muestra estado y fechas; el cliente
+  coordina el recojo por WhatsApp. Shalom no ofrece API pública, así que no hay actualización
   automática de estados.
 
 ## 5. Estructura
@@ -134,11 +148,14 @@ Además existe `cancelado`, que se muestra aparte en la línea de tiempo.
 
 ## 7. Decisiones técnicas
 
-- **Sin cuentas de cliente**: el código del pedido es la llave de consulta. La colección no se
-  puede listar sin ser administrador, y el código tiene ~1.1 × 10¹² combinaciones.
-- **Cliente y dirección dentro del pedido**: el documento `pedidos/{codigo}` contiene el contacto
-  y la dirección para que el administrador gestione la entrega. Solo se accede a él con el código
-  exacto o con sesión de administrador.
+- **Sin cuentas de cliente**: el código del pedido es la llave de consulta. La colección privada
+  no se puede leer ni listar sin ser administrador, y el código tiene ~1.1 × 10¹² combinaciones.
+- **Dos documentos por pedido**: `pedidos/{codigo}` guarda contacto y dirección para la entrega;
+  `seguimientos/{codigo}` es el único documento que se lee sin sesión y solo expone estado,
+  fechas e historial. Así el enlace público no filtra datos personales.
+- **Autorización de administrador**: después de `signInWithEmailAndPassword`, el sitio consulta
+  `admins/{uid}`. Si el documento no existe, cierra la sesión y muestra un error claro; no basta
+  con tener una cuenta en Authentication.
 - **Firebase Spark**: sin Cloud Functions ni Storage. La foto de referencia no se sube.
 - **Módulos ES sin build**: el SDK de Firebase se carga solo si hay configuración, desde
   `https://www.gstatic.com/firebasejs/11.10.0`.
@@ -168,8 +185,11 @@ node --check js/store.js
 - [ ] El checkout valida nombre, teléfono, entrega y privacidad.
 - [ ] Al confirmar aparece el código y el enlace al seguimiento.
 - [ ] El seguimiento muestra la línea de tiempo y el estado real.
+- [ ] El seguimiento público no muestra nombre, teléfono, dirección, importes ni productos.
 - [ ] El panel de demostración entra con `admin@lumina.pe` / `demo1234`.
+- [ ] En Firebase real, el panel solo entra si existe `admins/{uid}`; si falta, muestra el error.
 - [ ] Cambiar el estado en el panel se refleja en el seguimiento.
+- [ ] Un administrador autenticado puede borrar comentarios públicos desde `comunidad.html`.
 - [ ] La consola del navegador no muestra errores.
 - [ ] Lighthouse móvil ≥ 90 en Rendimiento, Accesibilidad y Buenas prácticas.
 
@@ -182,3 +202,16 @@ git push origin main
 ```
 
 Repositorio: <https://github.com/estu77226611-cloud/joyeria-personalizada-laser>
+
+## 11. Comprobar el acceso al panel
+
+1. Abre `admin.html` desde el servidor local (`http://localhost:5173`) o desde el dominio publicado.
+2. Escribe el correo y la contraseña del usuario creado en Firebase Authentication.
+3. Si el acceso falla, revisa en este orden:
+   - Authentication → **Users**: el usuario existe y el proveedor correo/contraseña está activo.
+   - Authentication → **Settings → Authorized domains**: `localhost` y el dominio del sitio.
+   - Firestore → colección `admins`: existe un documento cuyo **ID es el UID** del usuario.
+   - Firestore → **Reglas**: están publicadas las reglas de `firestore.rules` de este repositorio.
+4. El mensaje de error del formulario indica el problema concreto (`unauthorized-domain`,
+   `operation-not-allowed`, credenciales incorrectas o falta de `admins/{uid}`).
+5. La contraseña solo se cambia en Firebase Authentication; nunca se guarda en el código.

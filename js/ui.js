@@ -30,6 +30,19 @@ export function crear(etiqueta, propiedades = {}, ...hijos) {
   return elemento;
 }
 
+/* Desplaza un elemento a la vista de inmediato.
+   El CSS usa `scroll-behavior: smooth`; si esa animación no avanza (pestaña en
+   segundo plano, movimiento reducido, equipos lentos), la respuesta puede
+   quedarse fuera de la pantalla y parecer que el botón no hizo nada. */
+export function desplazarA(elemento, block = 'start') {
+  if (!elemento) return;
+  const raiz = document.documentElement;
+  const anterior = raiz.style.scrollBehavior;
+  raiz.style.scrollBehavior = 'auto';
+  elemento.scrollIntoView({ block });
+  raiz.style.scrollBehavior = anterior;
+}
+
 export function escaparHtml(texto) {
   return String(texto ?? '')
     .replace(/&/g, '&amp;')

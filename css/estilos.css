@@ -296,3 +296,6 @@
   html{scroll-behavior:auto}
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
 }
+
+/* Aviso solo cuando el HTML se abre con doble clic (file://): los módulos ES no cargan. */
+.sin-servidor body::before{content:'Abre el sitio con el servidor local: http://127.0.0.1:5173. Sin servidor, el JavaScript no se ejecuta.';position:fixed;inset:0 0 auto;z-index:9999;padding:12px 18px;background:#7a1f16;color:#fff;font:600 13px/1.5 system-ui,sans-serif;text-align:center}

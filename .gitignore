@@ -12,6 +12,10 @@ desktop.ini
 firebase-debug.log
 firestore-debug.log
 
+# Python (servidor local)
+__pycache__/
+*.pyc
+
 # Variables y archivos locales
 .env
 .env.*
