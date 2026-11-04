@@ -892,7 +892,17 @@ export async function entrarAdmin(email, password) {
     return sesion;
   }
 
-  const firebase = await cargarFirebase();
+  let firebase;
+  try {
+    firebase = await cargarFirebase();
+  } catch {
+    throw new Error(
+      'No se pudo cargar Firebase. Revisa tu conexión a internet y vuelve a intentarlo.'
+    );
+  }
+  if (!firebase) {
+    throw new Error('Firebase no está configurado: revisa js/firebase-config.js.');
+  }
   const { auth, au } = firebase;
 
   let credencial;
