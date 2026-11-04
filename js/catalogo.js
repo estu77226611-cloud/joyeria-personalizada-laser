@@ -1,8 +1,8 @@
 /* Catálogo: filtros con enlace profundo (?tipo=) y URL compartible. */
 
-import { TIPOS, filtrarPorTipo, tipoPorId } from './productos.js?v=20261104b';
-import { crearTarjeta } from './producto-card.js?v=20261104b';
-import { qs, qsa } from './ui.js?v=20261104b';
+import { TIPOS, filtrarPorTipo, tipoPorId } from './productos.js?v=20261104c';
+import { crearTarjeta } from './producto-card.js?v=20261104c';
+import { qs, qsa } from './ui.js?v=20261104c';
 
 const contenedor = qs('#allProducts');
 const botones = qsa('[data-filter]');

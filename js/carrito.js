@@ -1,14 +1,14 @@
 /* Bolsa de compras: contador global y renderizado reutilizable. */
 
-import { dinero } from './config.js?v=20261104b';
+import { dinero } from './config.js?v=20261104c';
 import {
   cambiarCantidad,
   contarBolsa,
   detalleBolsa,
   quitarProducto,
   totalBolsa
-} from './store.js?v=20261104b';
-import { aviso, crear, pedirConfirmacion, qs } from './ui.js?v=20261104b';
+} from './store.js?v=20261104c';
+import { aviso, crear, pedirConfirmacion, qs } from './ui.js?v=20261104c';
 
 export function actualizarContador() {
   const contador = qs('#cartCount');

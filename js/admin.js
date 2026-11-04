@@ -7,7 +7,7 @@ import {
   entregaPorId,
   estadoPorId,
   urlSeguimiento
-} from './config.js?v=20261104b';
+} from './config.js?v=20261104c';
 import {
   CREDENCIALES_DEMO_PUBLICAS,
   actualizarPedido,
@@ -18,8 +18,8 @@ import {
   repararSeguimientos,
   salirAdmin,
   suscribirPedidos
-} from './store.js?v=20261104b';
-import { aviso, crear, desplazarA, fechaHora, qs } from './ui.js?v=20261104b';
+} from './store.js?v=20261104c';
+import { aviso, crear, desplazarA, fechaHora, qs } from './ui.js?v=20261104c';
 
 function iniciar() {
   const formulario = qs('#adminLogin');

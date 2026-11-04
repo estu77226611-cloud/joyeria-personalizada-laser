@@ -6,8 +6,8 @@ import {
   esModoDemo,
   observarSesion,
   suscribirComentarios
-} from './store.js?v=20261104b';
-import { aviso, copiarTexto, crear, fechaHora, pedirConfirmacion, qs } from './ui.js?v=20261104b';
+} from './store.js?v=20261104c';
+import { aviso, copiarTexto, crear, fechaHora, pedirConfirmacion, qs } from './ui.js?v=20261104c';
 
 function iniciar() {
   const formulario = qs('#commentForm');
